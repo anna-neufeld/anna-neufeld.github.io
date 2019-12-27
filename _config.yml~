@@ -1,13 +1,13 @@
 ###########
 # site.url, site.title
 
-title: 'Anna Neufeld'
+title: 'SPA DRP'
 
 ## note:
 #  use site.path in your templates to make it work for both protocols e.g. http and https
 #  use site.url only inside the web feed template (e.g. requires full url incl. protocol)
 path: ""
-url:  'http://anna-neufeld.github.io/'
+url:  'http://spa-drp.github.io/'
 
 
 ########
@@ -18,6 +18,8 @@ markdown: kramdown
 sass:
   sass_dir: css
   style:    expanded
+
+
 
 exclude:
 - README.md
