@@ -5,6 +5,21 @@ title:  'Research'
 
 <h1> Current Projects </h1>
 
+<h3> Inference after latent variable estimation for single-cell RNA sequencing data</h3>
+<p>
+In the analysis of single-cell RNA sequencing data, researchers often characterize the variation between cells by estimating a latent variable, such as cell type or pseudotime, representing some aspect of the individual cell’s state. They then test each gene for association with the estimated latent variable. If the same data are used for both of these steps, then standard methods for computing p-values and confidence intervals in the second step will fail to achieve statistical guarantees such as Type 1 error control. Approaches such as sample splitting that can be applied to solve similar problems in other settings are not applicable in this context. In our first paper, we introduce count splitting, a flexible framework that allows us to carry out valid inference in this setting under a Poisson assumption. In our ongoing work, we extend the framework to account for overdispersion by considering negative binomial data. 
+</p>
+<ul>
+  <li> Anna C. Neufeld, Lucy L. Gao, Joshua Popp, Alexis Battle, and Daniela Witten (2022) Inference after latent variable estimation for single-cell RNA sequencing data.
+  <!-- <a href = XXXXXX> [preprint] </a> -->
+    <a href = https://anna-neufeld.github.io/countsplit> [website] </a>
+      <a href = https://github.com/anna-neufeld/countsplit> [R package] </a>
+        <a href = https://github.com/anna-neufeld/countsplit_paper> [simulation code] </a>
+   </li>
+    <li> For more information, see the  <a href = https://drive.google.com/file/d/1U4s7xiuz5yOCeDL2hjfIPZPbD7EsmINb/view> recording </a>  and  <a href =  https://drive.google.com/file/d/1KPX8TkT85jHYalxhieyy65PAj18PRbFF/view> slides </a> from my June, 2022 talk at the <a href =  https://www.selectiveinferenceseminar.com/home> International Seminar on Selective Inference </a>. 
+   </li>
+</ul>
+
 <h3> Selective Inference for Regression Trees </h3>
 <p>
 We consider conducting inference on the output of the Classification and Regression Tree (CART)  algorithm.
@@ -46,8 +61,7 @@ difference in the mean number of cases in males and females,
 both at the peak of the epidemic and at equilibrium.
 While this suggests an intrinsic disparity between males and females,
 the differences do not account for the vastly greater number of reported cases for females,
-indicative of a large reporting bias.
-In addition, we identify conditions under which sexual transmission may play a key role in
+indicative of a large reporting bias. In addition, we identify conditions under which sexual transmission may play a key role in
 sparking an epidemic, including temperate areas where ZIKV mosquito vectors are less prevalent.
 </p>
 <ul>
