@@ -5,6 +5,19 @@ title:  'Research'
 
 <h1> Current Projects </h1>
 
+<h3> Data thinning </h3>
+We propose data thinning, a new approach for splitting an observation into two or more independent parts that sum to the original observation, and that follow the same distribution as the original observation, up to a (known) scaling of a parameter. Data thinning has a number of applications to model selection, evaluation, and inference. For instance, cross-validation via data thinning provides an attractive alternative to the "usual" approach of cross-validation via sample splitting, especially in unsupervised settings in which the latter is not applicable. 
+</p>
+<ul>
+  <li> Anna Neufeld, Ameer Dharamshi, Lucy Gao, and Daniela Witten (2023) Data thinning for convolution-closed distributions. 
+  <a href = https://arxiv.org/abs/2301.07276> [preprint] </a> 
+    <a href = https://anna-neufeld.github.io/datathin> [website] </a>
+      <a href = https://github.com/anna-neufeld/datathin> [R package] </a>
+        <a href = https://github.com/anna-neufeld/datathin_paper> [simulation code] </a>
+   </li>
+</ul>
+
+
 <h3> Inference after latent variable estimation for single-cell RNA sequencing data</h3>
 <p>
 In the analysis of single-cell RNA sequencing data, researchers often characterize the variation between cells by estimating a latent variable, such as cell type or pseudotime, representing some aspect of the individual cell’s state. They then test each gene for association with the estimated latent variable. If the same data are used for both of these steps, then standard methods for computing p-values and confidence intervals in the second step will fail to achieve statistical guarantees such as Type 1 error control. Approaches such as sample splitting that can be applied to solve similar problems in other settings are not applicable in this context. In our first paper, we introduce count splitting, a flexible framework that allows us to carry out valid inference in this setting under a Poisson assumption. In our ongoing work, we extend the framework to account for overdispersion by considering negative binomial data. 
