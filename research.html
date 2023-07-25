@@ -18,20 +18,32 @@ We propose data thinning, a new approach for splitting a random variable X into 
    <li> Ameer Dharamshi, Anna Neufeld, Lucy Gao, Daniela Witten, and Jacob Bien (2023) Generalized data thinning using sufficient statistics.
   <a href = https://arxiv.org/pdf/2303.12931.pdf> [preprint] </a> 
    </li>
+   <li> For more information, you can see slides from relevant seminars and presentations: 
+  <a href = slides/dissertation_slides.pdf> [dissertation defense] </a> 
+   <a href = slides/NAMOS_june22.pdf> [NAMOS invited talk] </a> 
+      <a href = slides/amazon.pdf> [Amazon invited talk] </a> 
+   </li>
 </ul>
 
 
-<h3> Inference after latent variable estimation for single-cell RNA sequencing data</h3>
+<h3> Evaluating or conducting inference on latent variable models for single-cell RNA sequencing data </h3>
 <p>
-In the analysis of single-cell RNA sequencing data, researchers often characterize the variation between cells by estimating a latent variable, such as cell type or pseudotime, representing some aspect of the individual cell’s state. They then test each gene for association with the estimated latent variable. If the same data are used for both of these steps, then standard methods for computing p-values and confidence intervals in the second step will fail to achieve statistical guarantees such as Type 1 error control. Approaches such as sample splitting that can be applied to solve similar problems in other settings are not applicable in this context. In our first paper, we introduce count splitting, a flexible framework that allows us to carry out valid inference in this setting under a Poisson assumption. In our ongoing work, we extend the framework to account for overdispersion by considering negative binomial data. 
+In the analysis of single-cell RNA sequencing data, researchers often characterize the variation between cells by estimating a latent variable, such as cell type or pseudotime, representing some aspect of the individual cell’s state. They then want to evaluate such a model, or test each gene for association with the estimated latent variable. If the same data are used for both estimating the latent variable and for conducting downstream evaluation or inference, then standard methods for evaluating a model will be prone to overfitting and standard methods for computing p-values and confidence interval will fail to achieve statistical guarantees such as Type 1 error control. Approaches such as sample splitting that can be applied to solve similar problems in other settings are not applicable in this context. In our first paper, we introduce count splitting, a flexible framework that allows us to carry out valid inference in this setting under a Poisson assumption. In our second framework, we extend the framework to the setting where the data follow a negative binomial distribution. 
 </p>
 <ul>
-  <li> Anna C. Neufeld, Lucy L. Gao, Joshua Popp, Alexis Battle, and Daniela Witten (2022) Inference after latent variable estimation for single-cell RNA sequencing data. Biostatistics. 
+  <li> Anna C. Neufeld, Lucy L. Gao, Joshua Popp, Alexis Battle, and Daniela Witten (2022) Inference after latent variable estimation for single-cell RNA sequencing data. Biostatistics.
+  <a href = https://academic.oup.com/biostatistics/advance-article-abstract/doi/10.1093/biostatistics/kxac047/6893953?redirectedFrom=fulltext > [paper] </a> 
   <a href = https://arxiv.org/abs/2207.00554> [preprint] </a> 
-    <a href = https://anna-neufeld.github.io/countsplit> [website] </a>
-      <a href = https://github.com/anna-neufeld/countsplit> [R package] </a>
         <a href = https://github.com/anna-neufeld/countsplit_paper> [simulation code] </a>
    </li>
+   <li> Anna C. Neufeld, Joshua Popp, Lucy L. Gao, Alexis Battle, and Daniela Witten (2023) Negative binomial count splitting for single-cell RNA sequencing data. Arxiv preprint 2307.12985. Biostatistics. 
+  <a href = https://arxiv.org/abs/2207.00554> [preprint] </a> 
+        <a href = https://github.com/anna-neufeld/countsplit_paper> [simulation code] </a>
+   </li>
+ <li> The R package `countsplit` implements methodology from both papers. 
+ <a href = https://github.com/anna-neufeld/countsplit> [package] </a> 
+ <a href = https://anna-neufeld.github.io/countsplit/> [package website] </a> 
+ <a href = https://anna-neufeld.github.io/countsplit.tutorials/> [package tutorials] </a> </li>  
     <li> For more information, see the  <a href = https://drive.google.com/file/d/1U4s7xiuz5yOCeDL2hjfIPZPbD7EsmINb/view> recording </a>  and  <a href =  https://drive.google.com/file/d/1KPX8TkT85jHYalxhieyy65PAj18PRbFF/view> slides </a> from my June, 2022 talk at the <a href =  https://www.selectiveinferenceseminar.com/home> International Seminar on Selective Inference </a>. 
    </li>
 </ul>
