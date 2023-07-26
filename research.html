@@ -48,18 +48,14 @@ In the analysis of single-cell RNA sequencing data, researchers often characteri
    </li>
 </ul>
 
+
+<h1> Past Projects </h1>
+
 <h3> Selective Inference for Regression Trees </h3>
 <p>
-We consider conducting inference on the output of the Classification and Regression Tree (CART)  algorithm.
-A naive approach to inference that does not account for the fact that the tree was estimated from the data will not achieve
+We consider conducting inference on the output of the Classification and Regression Tree (CART)  algorithm. A naive approach to inference that does not account for the fact that the tree was estimated from the data will not achieve
  standard guarantees, such as Type 1 error rate control and nominal coverage.
- Thus, we propose a selective inference framework for conducting inference on a fitted CART tree.
- In a nutshell, we condition on the fact that the tree was estimated from the data.
-  We propose a test for the difference in the mean response between a pair of terminal nodes that controls the selective
-  Type 1 error rate, and a confidence interval for the mean response within a single terminal node that attains the
-  nominal selective coverage. Efficient algorithms for computing the necessary conditioning sets are provided.
-  We apply these methods in simulation and to a dataset involving the association between portion control interventions and
-   caloric intake.
+ Thus, we propose a selective inference framework for conducting inference on a fitted CART tree. In a nutshell, we condition on the fact that the tree was estimated from the data. 
 </p>
 <ul>
   <li> Anna C. Neufeld, Lucy L. Gao, and Daniela M. Witten (2022) Tree-Values: selective inference for regression trees. Journal of Machine Learning Research.
@@ -71,26 +67,14 @@ A naive approach to inference that does not account for the fact that the tree w
 </ul>
 
 
-<h1> Past Projects </h1>
 
 <h3> Dynamics of Zika Virus </h3>
 <p>
-  During the emerging outbreak of the Zika virus (ZIKV) in 2016, there were far more cases reported
-  in females than in males. This could be due to reporting bias; given Zika's link to severe
+  During the emerging outbreak of the Zika virus (ZIKV) in 2016, there were far more cases reported in females than in males. This could be due to reporting bias; given Zika's link to severe
   birth defects, females were more likely to get tested. However, it could also be due to the
   observed asymmetry in sexual transmission of the virus.
-ZIKV is spread to humans through a combination of vector and sexual transmission, but the relative
-contribution of these transmission routes to the overall epidemic remains largely unknown.
-We develop a mathematical model that describes the transmission dynamics of ZIKV to determine the processes driving the observed epidemic patterns.
-Our model reveals a 4.8% contribution of sexual transmission to the basic reproductive number, R0.
-This contribution is too minor to independently sustain an outbreak and suggests that vector transmission is the
-main driver of the ongoing epidemic. We also find a minor, yet statistically significant,
-difference in the mean number of cases in males and females,
-both at the peak of the epidemic and at equilibrium.
-While this suggests an intrinsic disparity between males and females,
-the differences do not account for the vastly greater number of reported cases for females,
-indicative of a large reporting bias. In addition, we identify conditions under which sexual transmission may play a key role in
-sparking an epidemic, including temperate areas where ZIKV mosquito vectors are less prevalent.
+ZIKV is spread through a combination of vector and sexual transmission; we develop a mathematical model that describes the transmission dynamics of ZIKV to determine the relative contributions of these transmission routes to the overall epidemic.
+Our model reveals a 4.8% contribution of sexual transmission to the basic reproductive number, R0. This contribution is too minor to independently sustain an outbreak and also too minor to account for rhe vastly greater number of reported cases for females, suggesting reporting bias. We identify conditions under which sexual transmission may play a key role in sparking an epidemic, including temperate areas where ZIKV mosquito vectors are less prevalent.
 </p>
 <ul>
   <li> Maxian, O*., Neufeld, A*., Talis, E. J*., Childs, L. M., & Blackwood, J. C. (2017). Zika virus dynamics: When does sexual transmission matter?. Epidemics, 21, 48-55. (* denotes equal contribution).
@@ -104,11 +88,8 @@ sparking an epidemic, including temperate areas where ZIKV mosquito vectors are 
 Undergraduate senior thesis at Williams College, with Brianna Heggeseth.
 </p>
 <p>
-  Growing scientific evidence suggests that exposure to environmental pollutants during key periods of development can cause lasting changes in an individual's metabolism. These changes can impact an individual's body mass index (BMI) trajectory and risk of obesity later in life. Given the complex ways in which environmental pollutants interact with one another, and the challenges of studying trajectories over time independent of level at a single point in time, nontraditional statistical models are needed to truly understand the relationship between environmental pollutants and an individual's BMI trajectory. We propose longitudinal regression trees as a promising approach to clustering individuals with similar BMI trajectories and similar chemical exposures so as to understand which exposures cause membership in these clusters. We compare several existing longitudinal regression tree algorithms in a simulation study setting, and evaluate the potential of these algorithms for tackling the BMI growth trajectory problem.
-Along the way, we propose modifications to a spline projection method first
-proposed by Yu and Lambert (1999) so that we can group individuals by the change in their BMI over time,
-rather than by the level of their BMI.
-We then demonstrate the potential of the existing algorithms and the modified algorithm
+  Growing evidence suggests that exposure to environmental pollutants during key periods of development can impact an individual's body mass index (BMI) trajectory and risk of obesity later in life. Given the complex ways in which environmental pollutants interact with one another, nontraditional statistical models are needed to truly understand the relationship between environmental pollutants and an individual's BMI trajectory. We propose longitudinal regression trees as a promising approach to clustering individuals with similar BMI trajectories and similar chemical exposures so as to understand which exposures cause membership in these clusters. We evaluate several existing longitudinal regression tree algorithms for their potential to tackle the BMI growth trajectory problem. We propose modifications to a spline projection method first
+proposed by Yu and Lambert (1999) so that we can group individuals by the change in their BMI over time, rather than by the level of their BMI. We demonstrate the potential of the existing algorithms and the modified algorithm
 on real BMI trajectories from the National Longitudinal Survey of Youth (NLSY).
 </p>
 <ul>
