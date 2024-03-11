@@ -3,107 +3,60 @@ layout: default
 title:  'Research'
 ---
 
-<h1> Current Projects </h1>
 
-<h3> Data thinning </h3>
-We propose data thinning, a new approach for splitting a random variable X into multiple independent random variables, without sacrificing any information about unknown parameters. Data thinning has a number of applications to model selection, evaluation, and inference. For instance, cross-validation via data thinning provides an attractive alternative to the "usual" approach of cross-validation via sample splitting, especially in unsupervised settings in which the latter is not applicable. 
-</p>
+<h3> Primary Research Interests </h3> 
+
+Classical statistical tools are designed for testing pre-specified hypotheses about pre-specified models. In the real world, data analysis is an adaptive process that involves exploring the data, fitting several models, evaluating these models to select the best one, and then testing hypotheses about this selected model. I refer to the practice of using the same data for multiple tasks along this exploratory pipeline as "double dipping". When classical statistical tools are applied without care in contexts that involve double dipping, the conclusions may be erroneous. Motivated by the gap between classical statistical tools and practical data analysis, my research program focuses on enabling scientists to safely draw conclusions from data in realistic settings where models and hypotheses are not pre-specified. 
+
+There are two primary ways to avoid the pitfalls associated with double dipping. 
+<ol>
+<li> Account for double dipping by creating specialized statistical procedures that directly account for the double-use of data. </li>
+<li> Avoid double dipping by splitting the data into independent training and test sets, such that only one set is used for each task.  While this is typically accomplished via sample splitting, there are settings in which sample splitting is not an option and where alternatives are needed. </li>
+</ol>
+
+My recent projects have focused on developing specialized procedures that account for double dipping (1), or on developing alternatives to sample splitting that allow us to avoid double dipping (2). Publications and talks related to these projects are linked below. For a relatively recent overview, you can see the slides from my  <a href = slides/dissertation_slides.pdf> dissertation defense</a>. 
+
+
+<h3> Featured publications or preprints </h3>
+
 <ul>
-  <li> Anna Neufeld, Ameer Dharamshi, Lucy Gao, and Daniela Witten (2023) Data thinning for convolution-closed distributions. 
+  <li> Ameer Dharamshi, <b>Anna Neufeld</b>, Lucy Gao, Daniela Witten, and Jacob Bien (2024+) Generalized data thinning using sufficient statistics. <a href = https://arxiv.org/pdf/2303.12931.pdf> [preprint] </a> 
+   </li>
+  <li> <b>Anna Neufeld</b>, Ameer Dharamshi, Lucy Gao, and Daniela Witten (2024) Data thinning for convolution-closed distributions. To appear in the <i>Journal of Machine Learning Research</i>. 
   <a href = https://arxiv.org/abs/2301.07276> [preprint] </a> 
     <a href = https://anna-neufeld.github.io/datathin> [website] </a>
       <a href = https://github.com/anna-neufeld/datathin> [R package] </a>
         <a href = https://github.com/anna-neufeld/datathin_paper> [simulation code] </a>
    </li>
-   <li> Ameer Dharamshi, Anna Neufeld, Lucy Gao, Daniela Witten, and Jacob Bien (2023) Generalized data thinning using sufficient statistics.
-  <a href = https://arxiv.org/pdf/2303.12931.pdf> [preprint] </a> 
-   </li>
-   <li> For more information, you can see slides from relevant seminars and presentations: 
-  <a href = slides/dissertation_slides.pdf> [dissertation defense] </a> 
-   <a href = slides/NAMOS.pdf> [NAMOS invited talk] </a> 
-      <a href = slides/amazon.pdf> [Amazon invited talk] </a> 
-   </li>
-</ul>
-
-
-<h3> Evaluating or conducting inference on latent variable models for single-cell RNA sequencing data </h3>
-<p>
-In the analysis of single-cell RNA sequencing data, researchers often characterize the variation between cells by estimating a latent variable, such as cell type or pseudotime, representing some aspect of the individual cell’s state. They then want to evaluate such a model, or test each gene for association with the estimated latent variable. If the same data are used for both estimating the latent variable and for conducting downstream evaluation or inference, then standard methods for evaluating a model will be prone to overfitting and standard methods for computing p-values and confidence interval will fail to achieve statistical guarantees such as Type 1 error control. Approaches such as sample splitting that can be applied to solve similar problems in other settings are not applicable in this context. In our first paper, we introduce count splitting, a flexible framework that allows us to carry out valid inference in this setting under a Poisson assumption. In our second framework, we extend the framework to the setting where the data follow a negative binomial distribution. 
-</p>
-<ul>
-  <li> Anna C. Neufeld, Lucy L. Gao, Joshua Popp, Alexis Battle, and Daniela Witten (2022) Inference after latent variable estimation for single-cell RNA sequencing data. Biostatistics.
+  <li> <b>Anna Neufeld</b>, Lucy L. Gao, Joshua Popp, Alexis Battle, and Daniela Witten (2024) Inference after latent variable estimation for single-cell RNA sequencing data. <i>Biostatistics 25 (1), 270-287 </i>.
   <a href = https://academic.oup.com/biostatistics/advance-article-abstract/doi/10.1093/biostatistics/kxac047/6893953?redirectedFrom=fulltext > [paper] </a> 
-  <a href = https://arxiv.org/abs/2207.00554> [preprint] </a> 
         <a href = https://github.com/anna-neufeld/countsplit_paper> [simulation code] </a>
-   </li>
-   <li> Anna C. Neufeld, Joshua Popp, Lucy L. Gao, Alexis Battle, and Daniela Witten (2023) Negative binomial count splitting for single-cell RNA sequencing data. Arxiv preprint 2307.12985. 
-  <a href = https://arxiv.org/abs/2207.00554> [preprint] </a> 
-        <a href = https://github.com/anna-neufeld/countsplit_paper> [simulation code] </a>
-   </li>
- <li> The R package `countsplit` implements methodology from both papers. 
- <a href = https://github.com/anna-neufeld/countsplit> [package] </a> 
+         <a href = https://github.com/anna-neufeld/countsplit> [package] </a> 
  <a href = https://anna-neufeld.github.io/countsplit/> [package website] </a> 
  <a href = https://anna-neufeld.github.io/countsplit.tutorials/> [package tutorials] </a> </li>  
+   </li>
+      <ul>
     <li> For more information, see the  <a href = https://drive.google.com/file/d/1U4s7xiuz5yOCeDL2hjfIPZPbD7EsmINb/view> recording </a>  and  <a href =  https://drive.google.com/file/d/1KPX8TkT85jHYalxhieyy65PAj18PRbFF/view> slides </a> from my June, 2022 talk at the <a href =  https://www.selectiveinferenceseminar.com/home> International Seminar on Selective Inference </a>. 
    </li>
-</ul>
-
-
-<h1> Past Projects </h1>
-
-<h3> Selective Inference for Regression Trees </h3>
-<p>
-We consider conducting inference on the output of the Classification and Regression Tree (CART)  algorithm. A naive approach to inference that does not account for the fact that the tree was estimated from the data will not achieve
- standard guarantees, such as Type 1 error rate control and nominal coverage.
- Thus, we propose a selective inference framework for conducting inference on a fitted CART tree. In a nutshell, we condition on the fact that the tree was estimated from the data. 
-</p>
-<ul>
-  <li> Anna C. Neufeld, Lucy L. Gao, and Daniela M. Witten (2022) Tree-Values: selective inference for regression trees. Journal of Machine Learning Research.
-  <a href = https://arxiv.org/abs/2106.07816> [preprint] </a>
-    <a href = https://anna-neufeld.github.io/treevalues> [website] </a>
-      <a href = https://github.com/anna-neufeld/treevalues> [R package] </a>
-        <a href = https://github.com/anna-neufeld/treevalues-simulations> [simulation code] </a>
+      </ul>
+  <li> <b>Anna Neufeld</b>, Joshua Popp, Lucy L. Gao, Alexis Battle, and Daniela Witten (2024+) Negative binomial count splitting for single-cell RNA sequencing data. <a href = https://arxiv.org/abs/2207.00554> [preprint] </a> 
    </li>
+    <li> For more information, see the <a href = slides/combi.pdf> > talk </a> I gave at the UW Combi Seminar in January, 2024. 
+   </li>
+<li> <b>Anna Neufeld</b>, Lucy L. Gao, and Daniela Witten (2022) Tree-values: selective inference for regression trees. <i>Journal of Machine Learning Research 23 (1), 13759-13801 </i>. <a href = https://www.jmlr.org/papers/volume23/21-0722/21-0722.pdf> [paper] </a> 
+    <a href = https://anna-neufeld.github.io/treevalues/> [website] </a>
+      <a href = https://github.com/anna-neufeld/treevalues> [R package] </a>
+
+</li>
 </ul>
 
-
-
-<h3> Dynamics of Zika Virus </h3>
-<p>
-  During the emerging outbreak of the Zika virus (ZIKV) in 2016, there were far more cases reported in females than in males. This could be due to reporting bias; given Zika's link to severe
-  birth defects, females were more likely to get tested. However, it could also be due to the
-  observed asymmetry in sexual transmission of the virus.
-ZIKV is spread through a combination of vector and sexual transmission; we develop a mathematical model that describes the transmission dynamics of ZIKV to determine the relative contributions of these transmission routes to the overall epidemic.
-Our model reveals a 4.8% contribution of sexual transmission to the basic reproductive number, R0. This contribution is too minor to independently sustain an outbreak and also too minor to account for rhe vastly greater number of reported cases for females, suggesting reporting bias. We identify conditions under which sexual transmission may play a key role in sparking an epidemic, including temperate areas where ZIKV mosquito vectors are less prevalent.
-</p>
+<h3> Additional publications or preprints </h3> 
 <ul>
-  <li> Maxian, O*., Neufeld, A*., Talis, E. J*., Childs, L. M., & Blackwood, J. C. (2017). Zika virus dynamics: When does sexual transmission matter?. Epidemics, 21, 48-55. (* denotes equal contribution).
+   <li> <b>Anna Neufeld</b>, Witten D. (2021). Discussion of Breiman's" Two Cultures": From Two Cultures to One. Observational Studies 7 (1), 171-174.
+  <a href = https://muse.jhu.edu/pub/56/article/799729/pdf> [paper] </a>
+   </li>
+  <li> Maxian, O*., <b>Anna Neufeld</b>*., Talis, E. J*., Childs, L. M., & Blackwood, J. C. (2017). Zika virus dynamics: When does sexual transmission matter?. Epidemics, 21, 48-55. (* denotes equal contribution).
   <a href = https://www.sciencedirect.com/science/article/pii/S1755436517301093> [paper] </a>
    </li>
 </ul>
 
-<h3> Regression Trees for Longitudinal Data </h3>
-
-<p>
-Undergraduate senior thesis at Williams College, with Brianna Heggeseth.
-</p>
-<p>
-  Growing evidence suggests that exposure to environmental pollutants during key periods of development can impact an individual's body mass index (BMI) trajectory and risk of obesity later in life. Given the complex ways in which environmental pollutants interact with one another, nontraditional statistical models are needed to truly understand the relationship between environmental pollutants and an individual's BMI trajectory. We propose longitudinal regression trees as a promising approach to clustering individuals with similar BMI trajectories and similar chemical exposures so as to understand which exposures cause membership in these clusters. We evaluate several existing longitudinal regression tree algorithms for their potential to tackle the BMI growth trajectory problem. We propose modifications to a spline projection method first
-proposed by Yu and Lambert (1999) so that we can group individuals by the change in their BMI over time, rather than by the level of their BMI. We demonstrate the potential of the existing algorithms and the modified algorithm
-on real BMI trajectories from the National Longitudinal Survey of Youth (NLSY).
-</p>
-<ul>
-<li> R package
-  <i> splinetree</i> implements regression trees and
-  random forests for longitudinal data using a modified version of a spline projection method first proposed by Yu and Lambert (1999).
-  The modified method allows users to group trajectories either by their full characteristics (shape and level) or by their shape
-  only.
- </li>
- <li> <a href = https://cran.r-project.org/web/packages/splinetree/index.html>  Package (CRAN)
-     </a>, <a href = https://anna-neufeld.github.io/splinetree>  Package website </a>,
-     <a href = https://github.com/anna-neufeld/splinetree>   Package github
-         </a>
-   </li>
-</ul>
-
-</ul>
