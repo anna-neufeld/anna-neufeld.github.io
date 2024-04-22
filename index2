@@ -1,0 +1,42 @@
+---
+layout: default
+title: 'About'
+---
+
+<div class="column featurette" style="padding-left: 10px;">
+  <div class="row">
+    <div class="image-container">
+      <img class="featurette-image" src="me.jpg" width="25%">
+    </div>
+
+    <div class="text">
+      <h2 class="featurette-heading">About</h2>
+      <p class="about-content">
+        Hi! I am a postdoctoral researcher at the Fred Hutchinson Cancer Center in Seattle, advised by
+        <a href="https://jtleek.com">Jeff Leek</a>. In 2023, I received my PhD from the <a href="http://www.stat.washington.edu/">Department of Statistics</a> at the University of Washington, where I was advised by <a href="https://www.danielawitten.com/">Daniela Witten</a>. I am interested in problems related to "double dipping" and selective inference, and I am particularly motivated by applications to genomic data. Before UW, I received undergraduate degrees in mathematics and computer science at
+        <a href="https://www.williams.edu/">Williams College</a>. In the fall of 2024, I will be returning to the Purple Valley to be an assistant professor of statistics at Williams. I am passionate about statistics education and love teaching and working with undergraduates. Outside of work, I like riding my bike slowly and playing ball sports badly. Here is a link to my <a href="https://anna-neufeld.github.io/cv_2024.pdf">CV</a>.
+      </p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .row {
+    display: flex;
+    align-items: center;
+  }
+
+  .image-container {
+    flex: 0 0 auto;
+    margin-right: 20px; /* Adjust this value as needed */
+  }
+
+  .text {
+    flex: 1;
+  }
+
+  .featurette-image {
+    max-width: 100%;
+    height: auto;
+  }
+</style>
