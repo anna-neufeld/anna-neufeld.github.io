@@ -3,13 +3,34 @@ layout: default
 title:  'About'
 ---
 
-<div class="column featurette" style="padding-top: 10px;">
-  <div style="text-align: center;">
-    <img class="featurette-image" src="me.jpg", width="50%">
+<style>
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  img {
+    max-width: 50%;
+    max-height:100%;
+    float: left;
+  }
+
+  .text {
+    font-size: 20px;
+    padding-left: 20px;
+    padding-top: 20%;
+    float: left;
+  }
+</style>
+
+<div class="container">
+    <div class="image">
+    <img src="me.jpg">
   </div>
 
 
-<div>
+<div class="text">
   <h2 class="featurette-heading">About </h2>
   <p class="about-content">
     Hi! I am a postdoctoral researcher at the Fred Hutchinson Cancer Center in Seattle, advised by 
@@ -17,4 +38,6 @@ title:  'About'
  <a href = " https://www.williams.edu/">Williams College</a>. In the fall of 2024, I will be returning to the Purple Valley to be an assistant professor of statistics at Williams. I am passionate about statistics education and love teaching and working with undergraduates. Outside of work, I like riding my bike slowly and playing ball sports badly. Here is a link to my <a href = "https://anna-neufeld.github.io/cv_2024.pdf"> CV</a>.
   </p>
 </div>
-</div>
+
+  
+ 
