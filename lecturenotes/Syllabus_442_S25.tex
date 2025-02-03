@@ -1,0 +1,241 @@
+% Don't touch this %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[11pt]{article}
+\usepackage{fullpage}
+\usepackage[left=0.8in,top=0.8in,right=0.8in,bottom=1in,headheight=3ex,headsep=3ex]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{xcolor}
+
+\newcommand{\blankline}{\quad\pagebreak[2]}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Modify Course title, instructor name, semester here %%%%%%%%
+
+\title{STAT 442: Statistical Learning and Data Mining}
+\author{Professor: Anna Neufeld}
+\date{Spring 2025}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Don't touch this %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[sc]{mathpazo}
+\linespread{1.05} % Palatino needs more leading (space between lines)
+\usepackage[T1]{fontenc}
+\usepackage[mmddyyyy]{datetime}% http://ctan.org/pkg/datetime
+\usepackage{advdate}% http://ctan.org/pkg/advdate
+\newdateformat{syldate}{\twodigit{\THEMONTH}/\twodigit{\THEDAY}}
+\newsavebox{\MONDAY}\savebox{\MONDAY}{Mon}% Mon
+\newcommand{\week}[1]{%
+%  \cleardate{mydate}% Clear date
+% \newdate{mydate}{\the\day}{\the\month}{\the\year}% Store date
+  \paragraph*{\kern-2ex\quad #1, \syldate{\today} - \AdvanceDate[4]\syldate{\today}:}% Set heading  \quad #1
+%  \setbox1=\hbox{\shortdayofweekname{\getdateday{mydate}}{\getdatemonth{mydate}}{\getdateyear{mydate}}}%
+  \ifdim\wd1=\wd\MONDAY
+    \AdvanceDate[7]
+  \else
+    \AdvanceDate[7]
+  \fi%
+}
+\usepackage{setspace}
+\usepackage{multicol}
+%\usepackage{indentfirst}
+\usepackage{fancyhdr,lastpage}
+\usepackage{url}
+\pagestyle{fancy}
+\usepackage{hyperref}
+\usepackage{lastpage}
+\usepackage{amsmath}
+\usepackage{layout}
+
+\lhead{}
+\chead{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Modify header here %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\rhead{\footnotesize  STAT 202: Fall 2024}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Don't touch this %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\lfoot{}
+\cfoot{\small \thepage/\pageref*{LastPage}}
+\rfoot{}
+
+\usepackage{array, xcolor}
+\usepackage{color,hyperref}
+\definecolor{clemsonorange}{HTML}{EA6A20}
+\hypersetup{colorlinks,breaklinks,linkcolor=clemsonorange,urlcolor=clemsonorange,anchorcolor=clemsonorange,citecolor=black}
+
+\begin{document}
+
+\maketitle
+
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
+
+
+\section{General Course Information}
+\begin{list}{}{}
+\item[\textbf{Lectures:}] Monday/Thursday, 2:35-3:50, Wachenheim 116.
+\item[\textbf{Office Hours:}]  Tentative! If there are students who cannot make either of these, I will consider moving one! Homework assignments will generally be due on Monday at 11:59pm. 
+\begin{itemize}
+\item Thursdays 11am-noon, Wachenheim 239. 
+\item Mondays 1:15pm-2:30pm, Wachenheim 239. 
+\item By appointment, at this link: \href{https://calendar.app.google/tGQKsNqSETcPAmRv6}{https://calendar.app.google/tGQKsNqSETcPAmRv6}. 
+\end{itemize}
+\item[\textbf{Teaching assistant:}] Sarah Hartman, sah4@williams.edu.
+\item[\textbf{TA session hours:}] Sunday evening, 7pm-9pm, room TBD. 
+\item[\textbf{Prerequisites:}] Stat 341 and Stat 346, or equivalent. Students are expected to be very comfortable with linear regression, programming in R, probability, and random variables.  
+ 
+\item[\textbf{Course description:}] We are surrounded by data, which continues to grow in size and complexity. Advancing scientific fields often requires extracting meaningful insights from this data—whether by developing predictive models, identifying relationships between variables, drawing causal conclusions, or uncovering hidden structures. Many of these tasks can be tackled with familiar statistical tools like linear and logistic regression. However, as data becomes larger and more complex, these methods may not be the best option. In response, recent decades have seen a surge of new algorithms designed for learning from diverse and complex datasets. In this course, we will explore a variety of these modern statistical learning algorithms. Beyond understanding how they work, we will develop the skills to compare, critically evaluate, and refine these methods to improve their effectiveness. 
+
+\item[\textbf{Learning objectives:}] At the end of this course, students will be able to: 
+\begin{itemize}
+\item Understand a broad set of classical statistical learning methods and develop the skills to learn new algorithms as needed.
+\item Evaluate a task, research question, or dataset to determine the most appropriate models or algorithms and compare candidate methods to make an informed selection.
+\item Articulate the fundamental bias-variance tradeoff and explain its impact on algorithm performance.
+\item Critically assess a machine learning pipeline—from data collection and cleaning to statistical learning and downstream decisions—while identifying potential limitations and harms.
+\item Digest and then communicate complex statistical concepts. 
+\end{itemize}
+\item[\textbf{Technology}] Computing is an essential part of statistics and data analysis. In this course, we will be using R and RStudio. If you have access to a personal laptop that you will be using throughout the semester, it will be convenient to download the latest versions of R and RStudio. Otherwise, please check out the Library's laptop lending page for information about borrowing a laptop from OIT \url{https://libguides.williams.edu/c.php?g=916778&p=8530683}. R and RStudio should be already installed on all school computers.
+\end{list}
+
+\section{Assessments}
+
+Here is a summary of the types of assessments you will find in this class, and how much they are worth for your grade. 
+
+\subsection{Homework (15\%)}
+
+There will be 7-8 homework assignments this semester. Problem sets will involve coding problems in R (conduct a simulation study to compare methods, implement a method, or analyze a dataset), theoretical or conceptual problems, and occasional writing questions (describe an idea or respond to a reading assignment). 
+
+All homework assignments will be turned in as a single polished PDF. I recommend preparing these PDFs in R Markdown. Please answer all questions in order in full sentences. All plots should have axis labels and titles. To avoid cluttering your main document, you may want to put your R code in an appendix.  Please review your PDF after knitting and before submitting to make sure that the formatting is polished-- it should look like a formal report! 
+  
+\subsection{Teaching presentation (15\%)}
+
+Each student will give one presentation during the semester. These presentations will happen nearly every week (and sometimes more than once per week) starting in Week 3 of the semester. 
+
+The idea is that the student will give a 20 minute ``primer talk" at the start of lecture that introduces one of our topics for the course (often, but not always, this will mean introducing the basics of a statistical learning algorithm). 
+
+I could spend 12 weeks this semester teaching you the fundamentals of 12 different statistical learning algorithms. However, this would be a disservice to you: new statistical learning algorithms are developed constantly, and if you treat this class as a place to learn a fixed set of 
+ 
+ \textcolor{red}{FIX.} 
+
+\subsection{Midterm exam (20 \%)}
+
+The week before spring break, we will have a midterm with an in-class component (on Thursday) and a take-home component (likely posted on Monday and due on Friday). 
+
+
+\subsection{Final project (40\%)}
+
+In groups of approximately two students, you are responsible for choosing a topic that we did not cover in class. This might involve a type of data we did not consider (e.g. network data, text data, image data, survival data, genomic data), a statistical concept that we did not cover in depth (e.g. conformal inference, semi-supervised learning, multiple testing, multitask learning, double descent), an algorithm that we did not cover (e.g. auto-encoders, transformers, graph clustering), or something else. 
+
+You will then prepare a thorough report where you introduce this topic and either apply it (if it is a concept), analyze it (if it is a type of data), and compare it to alternatives (if it is an algorithm). I expect that all projects will involve a substantial coding portion (a data analysis, implementation, or simulation study) as well as a substantial literature review portion (so that you can write about the topic in detail). 
+
+You will submit a proposal shortly after spring break where you will explain your idea. 
+
+We don't have a final exam in this class, and so I expect these projects to be very substantial and well-executed. While the majority of the grade will be a group-grade, a portion of the grade will reflect your individual contributions to the project. 
+
+\subsection{Participation (10\%)}
+
+To earn a high participation grade, I expect consistent attendance in class, and communication whenever absence is necessary. 
+
+
+Consistent attendance, but also a few little reading responses for class discussions (second half of semester). And asking questions about the teaching presentations- I will heep track! 
+
+\section{Calendar}
+
+ 
+
+
+\section{Course policies}
+
+\subsection{Extensions or late work}
+
+No late assignments will be accepted. The dropped homework is meant to cover most situations in which a homework would be turned in late. In rare circumstances, an extension on a homework assignment will be given if the student reaches out at least 48 hours before the due date about a known conflict.
+
+\subsection{Collaboration}
+
+I encourage you to work with classmates, visit office hours, and visit TA sessions. However, your final written solutions must be your own. One way to be sure you are not violating the honor code is to refrain from typing up your final written homework until you are on your own and working independently. You may use the internet or AI tools to look up R syntax and debug your R code. However, you may not ask an AI tool or google to carry out an entire problem for you. When you submit the homework, please write down the names of any of your collaborators, write down which TA sessions / office hours / etc. you attended, and acknowledge any online tools that you used. In the case of online tools, please write down exactly how you used the tool for a given question. \emph{For example: if you use ChatGPT to help with a problem, please write down what you asked it and why!}  
+
+ 
+\section{Calendar}
+
+Please see GLOW for the schedule of topics and for all due dates! 
+
+\section{Course Policies}
+
+\subsection{Grades and regrades}
+
+Course grades will appear on GLOW. Students are responsible for verifying their recorded scores during the semester. Although we strive for consistency and accuracy in grading, we understand that grading errors can occur. We will gladly correct all errors in tabulation or overlooked material. All regrading requests must be accompanied by a written statement carefully highlighting and
+explaining the items that were misgraded, and be submitted to the instructor within one week of when the assignment or exam is returned
+
+\subsection{Honor Code}
+
+As an institution fundamentally concerned with the free exchange of ideas, Williams College has
+always depended on the academic integrity of each of its members. A student who enrolls at
+Williams thereby agrees to respect and acknowledge the research and ideas of others in his or her
+work and to abide by those regulations governing work stipulated by the instructor. Any student
+who breaks these regulations, misrepresents his or her own work, or collaborates in the misrepresentation of another's work has committed a serious violation of this agreement. See the description of Williams's honor code and system at \url{https://sites.williams.edu/honor-system/}.
+
+The Williams Honor Code applies to all graded work in this class. The policies for each category of graded work was explained above. If you have any questions or uncertainties about what something means, or whether something is okay, please contact me: I am very happy to talk to you about this.
+
+\subsection{Use of Artificial Intelligence}
+
+Carrying out a full data analysis from start to finish is the key learning goal from this class. As far as I know, generative AI tools such as ChatGPT are currently unlikely to do a good job in preparing a full data analysis for you. Furthermore, asking Generative AI to carry out this whole process for you would be detrimental to your learning, as you need to practice these skills for yourself. Therefore, you may not ask generative AI to solve a problem for you from start to finish. For the same reason, you may not use generative AI to generate initial drafts of written work.
+
+However, I recognize that generative AI is an exciting tool. Knowing how to use the internet to figure out how to do things in R and debug R errors has long been an essential skill. Therefore, if you would like to ask ChatGPT questions such as ``how can I make the bars in my R histogram farther apart" or ``how do I change the axis labels in this ggplot", you can feel free. Just acknowledge that you did this on your assignment. Furthermore, if you would like to use generative AI to make a \emph{second draft} of your written materials more clear or concise, you may do this (with acknowledgement). However, you are 100\% responsible for your final answer, and be aware that sometimes ChatGPT's attempt to make statistical writing ``more concise" actually changes the meaning.
+
+%\subsection{Title IX}
+
+%Williams College is committed to providing a safe learning environment for all students that is free of all forms of discrimination and sexual harassment, including sexual assault, domestic violence, dating violence, and stalking. If you (or someone you know) has experienced or experiences any of these incidents, know that you are not alone. Williams has staff members trained to support you in navigating campus life, accessing health and counseling services, providing academic and housing accommodations, helping with legal protective orders, and more.Please be aware that all Williams faculty members are ``responsible employees". This means that if you tell me about a situation involving sexual harassment, sexual assault, dating violence, domestic violence, or stalking, I \textbf{must} share that information with the Title IX Coordinator. Although I have to make that notification, you will control how your case will be handled, including whether or not you wish to pursue a formal complaint. Our goal is to make sure you are aware of the range of options available to you and have access to the resources you need.  You can find a list of resources, including confidential resources, here: \url{http://titleix. williams.edu/support-and-accommodation/support-and-assistance-for-students/}.
+
+
+\subsection{Inclusion and classroom climate}
+
+It is my intent that students from all diverse backgrounds and perspectives be well served by this
+course, that students' learning needs be addressed both in and out of class, and that the diversity
+that students bring to this class be viewed as a resource, strength and benefit. I am dedicated
+to presenting materials and activities that are respectful of diversity in gender, gender identity,
+gender expression, sexual orientation, age, socioeconomic status, ethnicity, beliefs, race, culture
+and educational background, and other visible and non-visible categories. Your suggestions are always encouraged and appreciated. Please let me know (by email or by anonymous survey) if you see ways to improve the effectiveness of the course for you personally or for other students or student groups. %In addition, if any ofour class meetings conflict with your religious events, please let me know so that we can make
+arrangements for you.
+
+\subsection{Names and Pronouns}
+
+In this class, we use the name and gender pronouns that individuals ask us to use as a sign of mutual respect. I will gladly honor your request to address you by an another name or gender pronoun. Please advise me of this preference early in the semester so that I may make appropriate changes to my records. %Feel free to correct me on your gender pronoun. If you have any questions or concerns, please do not hesitate to contact me.
+
+\section{Resources}
+
+\subsection{GLOW discussion board}
+
+If you have a clarifying question about something that we covered in class, or something on an assignment or a solution key, please ask this on the GLOW discussion board. This board will be monitored by both the instructor and the TAs. This way, other students can see the question and the response, and may benefit from it. 
+
+\subsection{Email}
+
+If you have an individual matter that needs attention, please email me at \url{acn2@williams.edu}. Here are some matters to keep in mind when sending an email:
+\begin{itemize}
+\item Please include ``Stat 442" in the subject line. 
+\item If you are asking a simple clarification question about the course, I may respond ``please ask this on the discussion board instead". 
+\item I will do my best to respond to emails within 24 hours on the weekdays and 48 hours on the weekend. If I have not responded to an email within this time frame, please send me a polite reminder: things can certainly get lost in my inbox! 
+\item If you are asking for an individual meeting, please first try to schedule via my calendar-link on GLOW. This will reduce the need for back-and-forths! 
+\end{itemize}
+
+\subsection{General support and feedback}
+
+Your health and well-being are the most important things to us. Please let me know if you encounter any issues and difficulties in engaging in the course activities. You can reach out over email, post on the GLOW discussion board, or use the anonymous course feedback form that is posted on GLOW. 
+
+\subsection{Course help sessions}
+
+Please attend any office hours or TA sessions! You are welcome to drop in in-person at any time with any questions related to the course or the study of statistics in general. You are also welcome to stick around and work on the homework during the help session. I especially welcome you to come to my office hours to introduce yourself in the first week of the semester. If my scheduled office hours and appointment times truly do not work for your schedule, please email me! 
+
+\subsection{Accommodations}
+We are committed to supporting the learning of all students in our classes. Students with disabilities or disabling conditions who experience barriers in this course are encouraged to
+contact me to discuss options for access and full course participation. The Office of Accessible Education is also available to facilitate the removal of barriers and to ensure access and reasonable accommodations. Students with documented disabilities or disabling conditions of any kind who may need accommodations
+for this course or who have questions about appropriate resources are encouraged to contact the Office of Accessible Education at \url{oaestaff@williams.edu}.
+
+
+
+
+
+
+\end{document}
+
+

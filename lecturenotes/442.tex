@@ -6,6 +6,8 @@
 \usepackage{url}
 \usepackage{subfig}
 \usepackage[cm]{fullpage}
+\usepackage{hyperref}
+
 
 \usepackage{tikz}
 \usepackage{flowchart}\usetikzlibrary{shapes,arrows,positioning,calc,fit}
@@ -75,52 +77,148 @@
 
 % Start of a new week of logs begins here
 \hrulefill
-\section*{Week 0}
+\section{Wednesday 2/5: Welcome, what is statistical learning, basics of supervised learning}
 
-\subsection*{2/5: Welcome and Intros}
+\subsection{What is statistical learning?}
+
+Classical statistics is built on the scientific method. It assumes that we start with a hypothesis, and then we go out and we collect data that can be used to test this hypothesis. Importantly, the statistical methods that we will use to test this hypothesis are pre-specified; we choose them before we ever look at our data. \\
+\\
+For example, maybe we come up with the hypothesis that college students who sleep more than 7 hours per night have higher average GPAs than those who sleep less than 7 hours per night. We then go out and take a random sample of students, and ask them all if they sleep more than 7 hours per night, and also ask for their GPA. We then use a t-test to test if there is a statistically significant different in GPA between students who sleep more or less than 7 hours per night. \\
+\\
+Statistical learning is different. While there is no single, satisfying definition of statistical learning, it refers generally to a collection of tools used to make sense of complex data. Importantly, we don't always start with a pre-specified hypothesis. In this ``big data" era that we are living in, statistical learning has become very important. \\
+\\
+In the context of our motivating example, suppose that we collect a large survey of students at a college. We are generally interested in what factors impact the GPA of a college student. We search through the data, try different models, and end up realizing that ``hours of sleep per night" seems to be an important factor in determining GPA: more important than, say, major, whether or not you are a varsity athlete, etc. However, we also realize that the relationship between hours of sleep per night and GPA does not look linear. We decide to turn ``hours of sleep per night" into a binary variable: yes/no do you sleep more than 7 hours per night. We have ended up with the same ``model" as before, but this was a much more exploratory process. It started with a general task of \emph{prediction} (as opposed to a specific model or hypothesis), and used \emph{variable selection} and \emph{feature engineering} to settle on a final model. I would consider this to be an example of statistical learning. \\
+\\
+In general, there is no clear dividing line between statistics and machine learning. Linear regression and logistic regression, which you all studied in detail in Stat 346, are certainly examples of machine learning methods: they help us learn from data. In fact, they are both methods for \emph{supervised learning}, which is one of two primary types of statistical learning. 
 \begin{itemize}
-\item Welcome and intros.
-\item Going over the syllabus. 
-\item What is statistical learning? 
+\item In \emph{supervised learning}, we start with a response variable of interest and a set of potential predictor variables (also known as explanatory variables). Our general goal is to use the predictor/explanatory variables to explain or predict the response variable.
+\item In \emph{unsupervised learning}, we just start with a collection of variables: there is no specific response variable. Our goal is to find structure or patterns in the data. 
 \end{itemize}
+In this course, we will spend around 9 weeks on supervised learning, and only 2 weeks at the end on unsupervised learning. However, I do not want to give you the impression that unsupervised learning is less important! Unsupervised learning is extremely important, and is in fact the back-bone of recent generative AI technology. We start with supervised learning because it has a more natural connection to classical statistics and builds more naturally on your previous work. Hopefully, some of the concepts that you learn during our supervised learning unit will help you be equipped to delve more deeply into unsupervised learning in the future if you choose.  \\
+\\
+There is one more type of learning that has become really important in recent years, partly due to the proliferation of generative AI. This is the field of \emph{semi-supervised learning}, in which we have a (potentially small) set of \emph{labeled data} (data with predictors + response and a (potentially much larger) set of \emph{unlabeled data} (data that is missing the response). While we will not cover this in lecture, it would make a great \emph{final project topic}. Throughout the semester, I will try to flag these topics as they come up! \subsection{Supervised learning}
+
+\subsubsection{Introduction}
+
+As mentioned, you all already know at least two methods for supervised learning: linear regression and logistic regression. In general, these represent one from each of two classes of supervised learning methods.
+\begin{itemize}
+\item Regression: we use this term for any method that is used to predict a quantitative response variable.
+\item Classification: we use this term for any method that is used to predict a categorical response variable. 
+\end{itemize}
+As a reminder, a quantitative variable can be either continuous or discrete. A categorical variable can be either ordinal (the categories have orders) or unordered. In this class, we will not cover any methods for considering ordinal response variables: if this topic interests you, it is another \emph{potential final project topic}. 
+
+Linear regression and logistic regression are basic examples of supervised learning methods. In the past few decades, much more complex algorithms have been developed, and have exploded in popularity. There are a few reasons for this proliferation in complex methods. 
+\begin{itemize}
+\item Datasets have gotten bigger. As we will learn in this class, complex models are often only appropriate when applied to enough data. Thus, it is natural that the ``big data" era has gone hand-in-hand with the development of complex statistical learning methods. 
+\item Computers have gotten better, faster, and cheaper, which has enabled the fitting of complex models. 
+\item Free, open-source software programs like R and python have allowed researchers to develop algorithms and then easily share them with non-experts. This has allowed many methods to become popular. 
+\end{itemize}
+Given the huge number of statistical learning methods, we could spend each class this semester learning a new method, such that at the end you are left with a huge cookbook of methods to choose from for your future data analysis needs. In fact, this class will be a little bit like this. But, there is a problem with this approach of treating statistical learning like a cookbook. New machine learning methods get published every day, and the state-of-the-art is constantly changing. If your goal is to learn a list of methods or algorithms, you will find yourself continually behind and out-of-date! Thus, the goal of this class is not really to teach you a list of methods. Instead, the goal is to teach you the fundamental concepts and overarching themes that go into the development of the methods, such that you can compare methods, recognize their limitations, and learn new methods on your own in the future. This goal helps explain two features of this course: 
+\begin{itemize}
+	\item We will spend a fair amount of time on older, less state-of-the-art methods. We will use these methods to illustrate general principles and themes, even if they may not be the methods that you will use in practice in your future. 
+	\item You will all be doing a \emph{teaching presentation} this semester. You will be responsible for doing independent reading to learn about a method or a concept. You will need to synthesize what you learn, and give a 20 minute presentation to the class explaining the method. This skill mirrors the way you will all interact with machine learning in the future: you will be continually learning and synthesizing new methods. 
+\end{itemize}
+
+\subsubsection{Notation for datasets and random variables}
+
+The backbone of statistical learning is a matrix of predictors $\bold{X} \in \mathbb{R}^{n \times p}$ and a vector of the response variable $\bold{y} \in \mathbb{R}^n$. We let $n$ denote the number of \emph{observations} (rows of our dataset) and let $p$ be the number of \emph{variables} (columns of our dataset, usually not including the response): this notation is quite standard in statistics, but isn't always particularly precise. \\
+\\
+Consider a dataset that contains information on $n$ pets. The response variable is the weight of the pet $\bold{y}$, and we have one single predictor variable: the type of pet. This is a categorical variable that takes on values $\{ \text{cat}, \text{dog}, \text{hamster}, \text{rabbit} \}$. I could represent $\bold{X}$ in this case as a matrix with one column; where the column stores the actual values $\{$dog, dog, cat, dog, hamster, cat, dog, $\ldots \}$.  But, as you all know from Stat 346, it is likely going to be convenient for fitting to instead let $\bold{X}$ be a matrix with four columns, that store binary variables indicating ``is this a dog", ``is this a cat", etc. This simple example shows us how notation can get complicated: do we say that $p=4$ or $p=1$ for this dataset? Practically speaking, the $p=4$ is likely more relevant! But it can depend!  \\
+\\
+We can also get into problems when counting $n$ sometimes. Suppose we take measurements on $920$ students, who are spread out between $8$ schools. The schools are randomly assigned to either have required yoga PE class, or to have traditional PE class.  While we have $920$ students, the students within a given school are not \emph{independent} of one another: there may be factors other than the yoga class that are making their test scores more similar to one another. On the other hand, the schools underwent random assignment and can be safely assumed to be independent of one another. Thus, is the sample size $n$ the $920$ students or the $8$ schools? It turns out that for this \emph{clustered} or \emph{hierarchical} data, we have a notion of \emph{effective sample size} that is somewhere between $920$ and $8$, and depends on how correlated the students are within the schools. \\
+\\
+Who knew that counting $n$ and $p$ could be so complicated! In this class, just think of it as the number of rows and columns of the data, and remember these subtleties in case they ever come up. \\
+\\
+Your textbook (ISL) denotes pieces of the dataset $\bold{X}$ and $\bold{y}$ as follows. We observe $x_i$ for $i = 1,\ldots,n$, where $x_i = (x_{i1}, \ldots, x_{ip})^\top$ is a p-vector for each observation. We use $\bold{x}_1,\ldots,x_\bold{p}$ to denote the columns of $\bold{X}$; each is an n-vector representing its own variable. Your textbook says that it will use bold lowercase letters anytime the vector has length $n$ and use unbold lowercase letters otherwise: I am sure that I will start messing this up soon, but I will try to be consistent. \\
+\\
+The other important distinction is between a random variable and its observed realization. We will use capital, unbold letters to denote random variables. In the school example, we let $X_1$ denote whether or not a student took yoga for PE and we let $Y$ denote their standardized test scores. We assigned random values $x_{11}, x_{12},\ldots, x_{1n}$, which we collect into the vector $\bold{x}_1$. We then observed values $y_1,\ldots,y_{920}$, which we collect into the vector $\bold{y}$. But we might want to know how to predict the test score of a future random student, $Y$, based on whether or not they take yoga, $X_1$. \\
+\\
+In our supervised learning unit, we will start with \emph{regression}. Thus, for the rest of today, we assume that $Y$ is numerical. 
+
+\subsubsection{Model terminology for regression}
+
+
+
+In supervised learning, we assume that our response variable $Y$ is related to 
+
+More generally, suppose that we observe a quantitative response Y and p different predictors, X1, X2, . . . , Xp. We assume that there is some relationship between Y and X = (X1,X2,...,Xp), which can be written in the very general form
+Y =f(X)+ε. (2.1)
+Here f is some fixed but unknown function of X1, . . . , Xp, and ε is a random error term, which is independent of X and has mean zero. In this formula- tion, f represents the systematic information that X provides about Y .
+
+
+The goal is to study the effect of yoga on student standardized test scores. Is the 
+\textcolor{red}{Students clustered within schools. Effective sample size?? }
+
+
+
+I will try to use notation that is consistent with your book (ISL). So 
+
+We denote the predictor variables $X_1,\ldots,X_p$. These are column vectors. We also have vectors $x_1,\ldots,x_n$ for each person. 
+
+
+
+
+
+
+
+Given $X = (X_1, \ldots, X_p)^T)$, predict $Y$ using a prediction $\hat{Y}$. We always want $\hat{Y} \approx Y$, according to some loss function. 
+
+We typically assume that
+$$
+Y = f(X)+\epsilon. 
+$$
+
+
+
+
+
+
+
+
+
+\subsection{Basic terminology}
+\begin{itemize}
+\item Qualitative (categorical) variables.
+\begin{itemize}
+\item Ordinal? 
+\end{itemize}
+\item Quantitative (numerical) variables. 
+\begin{itemize}
+\item Discrete? 
+\end{itemize}
+\item Other types of variables usually get encoded as one of these
+\begin{itemize}
+\item Survival data (right censored): encode as one numerical and one categorical.
+\item Text: encode as really long dummy-variable vectors (categorical)
+\item Images: encode as 3D matrices (pixels, RGB). 
+\end{itemize}
+\item Predictors. $X$. Column vectors. 
+\item Response. $Y$ vs. $y$.
+\item $n$ and $p$: this is SO standard in statistics. maybe a bit less standard in some other fields. 
+\end{itemize}
+
+
+\subsection{Supervised learning}
+
+
+
+
+\section*{Monday 2/10: Basics of supervised learning, methods for regression}
+
+\subsection{}
+
+
+
+
+
+\subsubsection{Welcome}
+
+
+\subsection{What is statistical learning?}
 
 \section*{Week 1}
 
 \subsection*{2/10: Basics of supervised learning}
-%\begin{itemize}
-%\item The basic setup of a supervised learning problem:
-%$$
-%Y = f(X)+\epsilon. 
-%$$
-%\item We estimate $f$ with $\hat{f}$. 
-%\item Reducible vs. irreducible error. 
-%\item Classification vs. regression: quantitative vs. categorical variables. note that its not only type. 
-%\item Parametric vs. non-parametric.
-%\item Goal of prediction vs. goal of inference / understanding? 
-%\item Accuracy vs. interpretability tradeoff.
-%\item Need a notion of good performance. 
-%\item I feel like chapter 2 of ISLR very very quickly HINTS at stuff that I don't really want to get to until later. 
-%\item Bias variance tradeoff could be cool for week 1. But do I really want to do Bayes classifier? I don't think so! 
-%\item I like the idea of framing Week 1 all around linear regression vs. 1NN, as Daniela did. Can I make that happen? With an IPAD? Oh god I will really need to practice. I don't think I want to be doing classification yet. I just want to be doing regression. 
-%\item Pictures of 1NN vs. Linear Regression
-%\item A good model has small squared error loss. The thing that minimizes the squared error loss is always going to be $E[Y \mid X=x]$. Can we prove this? BUt we cannot actually compute this!!! KNN approximates this if enough data and smooth! Is this decision theory? What are we doing!
-%\item Question that sets up this course. Should I prefer linear regression or KNN?? 
-%\item Let's just work in one dimension for the moment. 
-%\item I want to discuss bias variance tradeoff. 
-%\item Expected TEST error is bias and variance.
-%\item Have I already discussed train and test?? UGH. 
-%\item Error is irreducible plus bias squared plus variance. 
-%\item 1NN has no bias but high variance. U hsped curve. constant mean has no variance. 
-%\end{itemize}
-
-\subsection*{2/13: Review of linear regression; contrast with KNN}
-
-%\section*{Week 2}
-%\subsection*{2/17: Variable Selection in Regression- stepwise?}
-%\subsection*{2/20: Ridge and Lasso}
-%\section*{Week 3}
-%\subsection*{2/24: }
-
 
 
 \end{document} 
