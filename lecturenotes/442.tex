@@ -89,14 +89,18 @@ Statistical learning is different. While there is no single, satisfying definiti
 \\
 In the context of our motivating example, suppose that we collect a large survey of students at a college. We are generally interested in what factors impact the GPA of a college student. We search through the data, try different models, and end up realizing that ``hours of sleep per night" seems to be an important factor in determining GPA: more important than, say, major, whether or not you are a varsity athlete, etc. However, we also realize that the relationship between hours of sleep per night and GPA does not look linear. We decide to turn ``hours of sleep per night" into a binary variable: yes/no do you sleep more than 7 hours per night. We have ended up with the same ``model" as before, but this was a much more exploratory process. It started with a general task of \emph{prediction} (as opposed to a specific model or hypothesis), and used \emph{variable selection} and \emph{feature engineering} to settle on a final model. I would consider this to be an example of statistical learning. \\
 \\
-In general, there is no clear dividing line between statistics and machine learning. Linear regression and logistic regression, which you all studied in detail in Stat 346, are certainly examples of machine learning methods: they help us learn from data. In fact, they are both methods for \emph{supervised learning}, which is one of two primary types of statistical learning. 
+In general, there is no clear dividing line between statistics and machine learning. Linear regression and logistic regression, which you all studied in detail in Stat 346, are certainly examples of machine learning methods: they help us learn from data. In fact, they are both methods for \emph{supervised learning}, which is one of two primary types of statistical learning.\footnote{I would be remiss if I did not mention \emph{reinforcement learning}, which is a very important topic in machine learning but does not relate directly to drawing insights from a given dataset.}  
 \begin{itemize}
 \item In \emph{supervised learning}, we start with a response variable of interest and a set of potential predictor variables (also known as explanatory variables). Our general goal is to use the predictor/explanatory variables to explain or predict the response variable.
 \item In \emph{unsupervised learning}, we just start with a collection of variables: there is no specific response variable. Our goal is to find structure or patterns in the data. 
 \end{itemize}
-In this course, we will spend around 9 weeks on supervised learning, and only 2 weeks at the end on unsupervised learning. However, I do not want to give you the impression that unsupervised learning is less important! Unsupervised learning is extremely important, and is in fact the back-bone of recent generative AI technology. We start with supervised learning because it has a more natural connection to classical statistics and builds more naturally on your previous work. Hopefully, some of the concepts that you learn during our supervised learning unit will help you be equipped to delve more deeply into unsupervised learning in the future if you choose.  \\
+In this course, we will spend around 9 weeks on supervised learning, and only 2 weeks at the end on unsupervised learning. However, I do not want to give you the impression that unsupervised learning is less important! Unsupervised learning is extremely important, and is in fact the back-bone of recent generative AI technology. We start with supervised learning because it has a more natural connection to classical statistics and builds more naturally on your previous work. Hopefully, some of the concepts that you learn during our supervised learning unit will help you be equipped to delve more deeply into unsupervised learning in the future if you choose.\\
 \\
-There is one more type of learning that has become really important in recent years, partly due to the proliferation of generative AI. This is the field of \emph{semi-supervised learning}, in which we have a (potentially small) set of \emph{labeled data} (data with predictors + response and a (potentially much larger) set of \emph{unlabeled data} (data that is missing the response). While we will not cover this in lecture, it would make a great \emph{final project topic}. Throughout the semester, I will try to flag these topics as they come up! \subsection{Supervised learning}
+There is one more type of learning that has become really important in recent years, partly due to the proliferation of generative AI. This is the field of \emph{semi-supervised learning}, in which we have a (potentially small) set of \emph{labeled data} (data with predictors + response and a (potentially much larger) set of \emph{unlabeled data} (data that is missing the response). While we will not cover this in lecture, it would make a great \emph{final project topic}. Throughout the semester, I will try to flag these topics as they come up! 
+
+
+
+\subsection{Supervised learning}
 
 \subsubsection{Introduction}
 
@@ -127,6 +131,10 @@ Consider a dataset that contains information on $n$ pets. The response variable 
 \\
 We can also get into problems when counting $n$ sometimes. Suppose we take measurements on $920$ students, who are spread out between $8$ schools. The schools are randomly assigned to either have required yoga PE class, or to have traditional PE class.  While we have $920$ students, the students within a given school are not \emph{independent} of one another: there may be factors other than the yoga class that are making their test scores more similar to one another. On the other hand, the schools underwent random assignment and can be safely assumed to be independent of one another. Thus, is the sample size $n$ the $920$ students or the $8$ schools? It turns out that for this \emph{clustered} or \emph{hierarchical} data, we have a notion of \emph{effective sample size} that is somewhere between $920$ and $8$, and depends on how correlated the students are within the schools. \\
 \\
+We should also mention that data does not always come to you in a form where it looks like $\bold{X} \in \mathbb{R}^{n \times p}$ and $\bold{y} \in \mathbb{R}^n$.  
+
+
+
 Who knew that counting $n$ and $p$ could be so complicated! In this class, just think of it as the number of rows and columns of the data, and remember these subtleties in case they ever come up. \\
 \\
 Your textbook (ISL) denotes pieces of the dataset $\bold{X}$ and $\bold{y}$ as follows. We observe $x_i$ for $i = 1,\ldots,n$, where $x_i = (x_{i1}, \ldots, x_{ip})^\top$ is a p-vector for each observation. We use $\bold{x}_1,\ldots,x_\bold{p}$ to denote the columns of $\bold{X}$; each is an n-vector representing its own variable. Your textbook says that it will use bold lowercase letters anytime the vector has length $n$ and use unbold lowercase letters otherwise: I am sure that I will start messing this up soon, but I will try to be consistent. \\
@@ -137,13 +145,13 @@ In our supervised learning unit, we will start with \emph{regression}. Thus, for
 
 \subsubsection{Model terminology for regression}
 
+In a regression problem, we assume that our response variable $Y$ is related to a set of predictors $X= (X_1,\ldots,X_p)$ via some model that can be written as
+\begin{equation}
+Y = f(X)+\epsilon. 
+\end{equation}
+The function $f()$ is a fixed but unknown function that represents the systematic information that $X$ provides about $Y$, and $\epsilon$ is a random error term, which should satisfy the condition that $E[\epsilon] = 0$.\footnote{If this condition does not hold, then $f()$ is a very bad model!}
 
 
-In supervised learning, we assume that our response variable $Y$ is related to 
-
-More generally, suppose that we observe a quantitative response Y and p different predictors, X1, X2, . . . , Xp. We assume that there is some relationship between Y and X = (X1,X2,...,Xp), which can be written in the very general form
-Y =f(X)+ε. (2.1)
-Here f is some fixed but unknown function of X1, . . . , Xp, and ε is a random error term, which is independent of X and has mean zero. In this formula- tion, f represents the systematic information that X provides about Y .
 
 
 The goal is to study the effect of yoga on student standardized test scores. Is the 
@@ -151,23 +159,9 @@ The goal is to study the effect of yoga on student standardized test scores. Is 
 
 
 
-I will try to use notation that is consistent with your book (ISL). So 
-
-We denote the predictor variables $X_1,\ldots,X_p$. These are column vectors. We also have vectors $x_1,\ldots,x_n$ for each person. 
-
-
-
-
-
 
 
 Given $X = (X_1, \ldots, X_p)^T)$, predict $Y$ using a prediction $\hat{Y}$. We always want $\hat{Y} \approx Y$, according to some loss function. 
-
-We typically assume that
-$$
-Y = f(X)+\epsilon. 
-$$
-
 
 
 
@@ -178,14 +172,6 @@ $$
 
 \subsection{Basic terminology}
 \begin{itemize}
-\item Qualitative (categorical) variables.
-\begin{itemize}
-\item Ordinal? 
-\end{itemize}
-\item Quantitative (numerical) variables. 
-\begin{itemize}
-\item Discrete? 
-\end{itemize}
 \item Other types of variables usually get encoded as one of these
 \begin{itemize}
 \item Survival data (right censored): encode as one numerical and one categorical.
