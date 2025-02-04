@@ -80,6 +80,7 @@
 \section{Wednesday 2/5: Welcome, what is statistical learning, basics of supervised learning}
 
 \subsection{What is statistical learning?}
+\label{sec_veryintro}
 
 Classical statistics is built on the scientific method. It assumes that we start with a hypothesis, and then we go out and we collect data that can be used to test this hypothesis. Importantly, the statistical methods that we will use to test this hypothesis are pre-specified; we choose them before we ever look at our data. \\
 \\
@@ -89,9 +90,9 @@ Statistical learning is different. While there is no single, satisfying definiti
 \\
 In the context of our motivating example, suppose that we collect a large survey of students at a college. We are generally interested in what factors impact the GPA of a college student. We search through the data, try different models, and end up realizing that ``hours of sleep per night" seems to be an important factor in determining GPA: more important than, say, major, whether or not you are a varsity athlete, etc. However, we also realize that the relationship between hours of sleep per night and GPA does not look linear. We decide to turn ``hours of sleep per night" into a binary variable: yes/no do you sleep more than 7 hours per night. We have ended up with the same ``model" as before, but this was a much more exploratory process. It started with a general task of \emph{prediction} (as opposed to a specific model or hypothesis), and used \emph{variable selection} and \emph{feature engineering} to settle on a final model. I would consider this to be an example of statistical learning. \\
 \\
-In recent decades, as datasets have become larger and computers have become more powerful, there have been a proliferation of complex methods for analyzing data that are often labeled as machine learning methods. In general, however, there is no clear dividing line between statistics and machine learning. Linear regression and logistic regression, which you all studied in detail in Stat 346, are certainly examples of machine learning methods: they help us learn from data. In fact, they are both methods for \emph{supervised learning}, which is one of two primary types of statistical learning.\footnote{I would be remiss if I did not mention \emph{reinforcement learning}, which is a very important topic in machine learning but does not relate directly to drawing insights from a given dataset.}  
+In recent decades, as datasets have become larger and computers have become more powerful, there have been a proliferation of complex methods for analyzing data that are often labeled as machine learning methods. In general, however, there is no clear dividing line between statistics and machine learning. Linear regression and logistic regression, which you all studied in detail in Stat 346, are certainly examples of machine learning methods: they help us learn from data. In fact, they are both methods for \emph{supervised learning}, which is one of two primary types of statistical learning.\footnote{I would be remiss if I did not mention \emph{reinforcement learning}, which is a very important topic in machine learning but does not relate as directly to drawing insights from a given dataset.}  
 \begin{itemize}
-\item In \emph{supervised learning}, we start with a response variable of interest and a set of potential predictor variables (also known as explanatory variables). Our general goal is to use the predictor/explanatory variables to explain or predict the response variable.
+\item In \emph{supervised learning}, we start with a response variable of interest and a set of potential predictor variables (also known as explanatory variables). Our general goal is to use the predictor variables to explain or predict the response variable.
 \item In \emph{unsupervised learning}, we just start with a collection of variables: there is no specific response variable. Our goal is to find structure or patterns in the data. 
 \end{itemize}
 
@@ -128,31 +129,74 @@ Given the huge number of statistical learning methods, we could spend each class
 
 \subsubsection{Notation for datasets and random variables}
 
-The backbone of statistical learning is a matrix of predictors $\bold{X} \in \mathbb{R}^{n \times p}$ and a vector of the response variable $\bold{y} \in \mathbb{R}^n$. We let $n$ denote the number of \emph{observations} (rows of our dataset) and let $p$ be the number of \emph{variables} (columns of our dataset, usually not including the response): this notation is quite standard in statistics, but isn't always particularly precise. \\
+The backbone of statistical learning is a matrix of predictors $\bold{X} \in \mathbb{R}^{n \times p}$ and a vector of length $n$ that stores the responses $\bold{y}$. We let $n$ denote the number of \emph{observations} (rows of our dataset) and let $p$ be the number of \emph{variables} (columns of our dataset, usually not including the response): this notation is quite standard in statistics, but isn't always particularly precise. \\
 \\
-Your textbook (ISL) denotes pieces of the dataset $\bold{X}$ and $\bold{y}$ as follows. We observe $x_i$ for $i = 1,\ldots,n$, where $x_i = (x_{i1}, \ldots, x_{ip})^\top$ is a p-vector for each observation. We use $\bold{x}_1,\ldots,x_\bold{p}$ to denote the columns of $\bold{X}$; each is an n-vector representing its own variable. Your textbook says that it will use bold lowercase letters anytime the vector has length $n$ and use unbold lowercase letters otherwise: I am sure that I will start messing this up soon, but I will try to be consistent. \\
+Your textbook (ISL) denotes pieces of the dataset $\bold{X}$ and $\bold{y}$ as follows. We observe $x_i$ for $i = 1,\ldots,n$, where $x_i = (x_{i1}, \ldots, x_{ip})^\top$ is a p-vector for each observation. We use $\bold{x}_1,\ldots,\bold{x}_{p}$ to denote the columns of $\bold{X}$; each is an n-vector representing its own variable. Your textbook says that it will use bold lowercase letters anytime the vector has length $n$ and use unbold lowercase letters otherwise: I am sure that I will start messing this up soon, but I will try to be consistent. \\
 \\
-The other important distinction is between a random variable and its observed realization. We will use capital, unbold letters to denote random variables. In the school example, we let $X_1$ denote whether or not a student took yoga for PE and we let $Y$ denote their standardized test scores. We assigned random values $x_{11}, x_{12},\ldots, x_{1n}$, which we collect into the vector $\bold{x}_1$. We then observed values $y_1,\ldots,y_{920}$, which we collect into the vector $\bold{y}$. But we might want to know how to predict the test score of a future random student, $Y$, based on whether or not they take yoga, $X_1$. \\
+The other important distinction is between a random variable and its observed realization. We will use capital, unbold letters to denote random variables. In our example from Section~\ref{sec_veryintro}, we might let $X_1$ denote the number of hours that a randomly selected student sleeps per night and let $Y$ denote their GPA. Once we observe a particular $n$ students for our dataset, we let their sleep values be $\bold{x}_1 = (x_{11}, x_{12},\ldots, x_{1n})^\top$ and we let their GPA values be $\bold{y} = (y_1,\ldots,y_{n})^\top$.  \\
 \\
 Consider a dataset that contains information on $n$ pets. The response variable is the weight of the pet $\bold{y}$, and we have one single predictor variable: the type of pet. This is a categorical variable that takes on values $\{ \text{cat}, \text{dog}, \text{hamster}, \text{rabbit} \}$. I could represent $\bold{X}$ in this case as a matrix with one column; where the column stores the actual values $\{$dog, dog, cat, dog, hamster, cat, dog, $\ldots \}$.  But, as you all know from Stat 346, it is likely going to be convenient for fitting to instead let $\bold{X}$ be a matrix with four columns, that store binary variables indicating ``is this a dog", ``is this a cat", etc. This simple example shows us how notation can get complicated: do we say that $p=4$ or $p=1$ for this dataset? Practically speaking, the $p=4$ is likely more relevant! But it can depend!  \\
 \\
 We can also get into problems when counting $n$ sometimes. Suppose we take measurements on $920$ students, who are spread out between $8$ schools. The schools are randomly assigned to either have required yoga PE class, or to have traditional PE class.  While we have $920$ students, the students within a given school are not \emph{independent} of one another: there may be factors other than the yoga class that are making their test scores more similar to one another. On the other hand, the schools underwent random assignment and can be safely assumed to be independent of one another. Thus, is the sample size $n$ the $920$ students or the $8$ schools? It turns out that for this \emph{clustered} or \emph{hierarchical} data, we have a notion of \emph{effective sample size} that is somewhere between $920$ and $8$, and depends on how correlated the students are within the schools. \\
 \\
-We should also mention that data does not always come to you in a form where it looks like $\bold{X} \in \mathbb{R}^{n \times p}$ and $\bold{y} \in \mathbb{R}^n$. Consider the task of image classification. You get a set of $500$ images, which are stored as $400 \times 400$ pixel images, where each pixel records a numerical value between 0 and 255 for red, green, and blue. Each image is associated with a label in $\{\text{cat},  \text{dog}\}$, and you observe $y_1,\ldots, y_{500}$. In this case, the RGB values in the pixels in the images are your predictor values, but they don't come in a simple $n \times p$ matrix. We need to reshape the data so that each image $i$ has an associated vector $x_i \in \mathbb{R}^{400 \times 400 \times 3}$ that stores all three color values for all $400 \times 400$ pixels. It will also likely be convenient to code $y_i$ such that a $1$ denotes a dog and a $0$ denotes a cat, such that $y$ becomes numerical.\footnote{When there are more than $2$ classes, such as $\{\text{cat},  \text{dog}, \text{fish}\}$, we might need more than one column to store our response variable!} \\ 
+We should also mention that data does not always come to you in a form where it looks like $\bold{X} \in \mathbb{R}^{n \times p}$ and $\bold{y} \in \mathbb{R}^n$. Consider the task of image classification. You get a set of $500$ images, which are stored as $400 \times 400$ pixel images, where each pixel records a numerical value between 0 and 255 for red, green, and blue. Each image is associated with a label in $\{\text{cat},  \text{dog}\}$, and you observe $y_1,\ldots, y_{500}$. In this case, the RGB values in the pixels in the images are your predictor values, but they don't come in a simple $n \times p$ matrix. We need to reshape the data so that each image $i$ has an associated vector $x_i \in \mathbb{R}^{400 \times 400 \times 3}$ that stores all three color values for all $400 \times 400$ pixels. It will also likely be convenient to code $y_i$ such that a $1$ denotes a dog and a $0$ denotes a cat, such that $y$ becomes numerical. When there are more than $2$ classes, such as $\{\text{cat},  \text{dog}, \text{fish}\}$, we will need more than one column to store our response variables numerically.  \\ 
 \\
-Who knew that counting $n$ and $p$ could be so complicated! In this class, just think of it as the number of rows and columns of the data, and remember these subtleties in case they ever come up. \\
+Who knew that counting $n$ and $p$ could be so complicated! In this class, just think of it as the number of rows and columns (minus the response columns) of the data, and remember these subtleties in case they ever come up. \\
 \\
 In our supervised learning unit, we will start with \emph{regression}. Thus, for the rest of today, we assume that $Y$ is numerical. 
 
-\subsubsection{Model terminology for regression}
+\subsection{Regression}
 
 In a regression problem, we assume that our response variable $Y$ is related to a set of predictors $X= (X_1,\ldots,X_p)$ via some model that can be written as
 \begin{equation}
+\label{eq_model}
 Y = f(X)+\epsilon. 
 \end{equation}
-The function $f()$ is a fixed but unknown function that represents the systematic information that $X$ provides about $Y$, and $\epsilon$ is a random error term, which should satisfy the condition that $E[\epsilon] = 0$.\footnote{If this condition does not hold, then $f()$ is a very bad model!}
+The function $f()$ is a fixed but unknown function that represents the systematic information that $X$ provides about $Y$, and $\epsilon$ is a random error term, which should satisfy the condition that $E[\epsilon] = 0$ and that $\epsilon$ is independent of $X$. These conditions ensure that $f()$ is capturing all parts of $Y$ that can be explained by $X$, and $\epsilon$ captures the parts of $Y$ that cannot be explained by $X$. The task in regression is to come up with a good approximation for the unknown function $f()$. More specifically, we want to find a function $\hat{f}()$ such that, $Y \approx \hat{f}(X)$. 
+
+\subsubsection{Two possible goals}
+
+There are two reasons why we might want to come up with a function $\hat{f}()$ such that, $Y \approx \hat{f}(X)$. 
+\begin{enumerate}
+\item We might want to be able to come up with predictions 	$\hat{Y} = \hat{f}(X)$ for future realizations of data where $Y$ itself is not observed.
+\item We might want to understand which predictors in $X$ are most associated with $Y$ in order to draw a scientific conclusion, or at least take a step towards drawing a scientific conclusion. 
+\end{enumerate}
+When beginning a regression problem, it is important to clearly define which of these two reasons is more important to you. This will aid you in choosing the best strategy for approaching the problem! 
+
+As we will see throughout the semester, these two goals can sometimes be at odds with one another! If we only care about prediction, we do not need our function $\hat{f}()$ to be interpretable: we can use an extremely complex model (known as a ``black box"), and we will be happy as long as $\hat{Y} \approx Y$. On the other hand, if we want to draw scientific conclusions, then we might wish to use a simple, interpretable model for $\hat{f}()$ that lends itself to rigorous inference. We should also note that it is not always an either-or situation. Sometimes, we want to make good predictions and also understand which variables are contributing significantly to the predictions. Managing the tradeoff, or lack thereof, between these two goals will be one of our fundamental themes for the semester. 
+
+\subsubsection{Measuring accuracy}
+
+Let's assume for a few minutes that our goal is to make good predictions. In this case, we will be happy with any model that has high predictive accuracy, meaning that $Y \approx \hat{Y}$. 
+
+Formally, let's say that we will be happy with a model if it achieves low squared-error loss: meaning $E[(Y - \hat{Y})^2]$. Using the model in \eqref{eq_model} and the fact that $\hat{Y}= \hat{f}(X)$, we can rewrite this loss as: 
+\begin{equation}
+\label{squared_error}
+E[(Y - \hat{Y})^2] =  	E\left[\left(f(X) + \epsilon - \hat{f}(X)\right)^2\right]. 
+\end{equation}
+We can see from \eqref{squared_error} that, even if we manage to estimate $f()$ perfectly such that $\hat{f}()=f()$, our squared-error loss will not be equal to $0$, because we always have the contribution of our random error $\epsilon$. As statisticians, we always think that there is random noise $\epsilon$, and so we cannot forget about this! We do not expect to ever make perfect predictions!\footnote{Introductory Machine Learning courses taught in CS departments often derive everything starting from the ``no noise" setting where things can be perfectly predicted! This is a different perspective that may be useful sometimes! But as a statistician, I believe that we always have random noise!}
+
+It turns out that, under the assumptions stated below \eqref{eq_model}, we can rewrite \eqref{squared_error} as:
+\begin{equation}
+\label{eq_red_irr}
+E\left[\left(f(X) + \epsilon - \hat{f}(X)\right)^2\right] = E\left[\left(f(X) - \hat{f}(X)\right)^2\right] + \mathrm{Var}\left(\epsilon\right).
+\end{equation}
+We call the term $E\left[\left(f(X) - \hat{f}(X)\right)^2\right]$ the \emph{reducible error}: we can make it smaller by using a better statistical learning tool to estimate $f()$. 
+We call $\mathrm{Var}\left(\epsilon\right)$ the \emph{irreducible error}: no matter how good our estimate of $f()$ is, this is the portion of $Y$ that simply cannot be explained using our predictors $X$. The irreducible error may stem from missing variables, unmeasurable variables, measurement error, or another cause.  You will derive this equality in \eqref{eq_red_irr} in HW1! 
+
+These error quantities are important even if our primary goal is interpretation rather than prediction. We typically do not want to spend too much time interpreting the findings from a model where $Y \not\approx \hat{Y}$! 
 
 \end{document} 
+
+\subsubsection{The best possible model?}
+
+The best we can do is $E[Y \mid X]$. Go look at Daniela notes.
+
+\subsubsection{Start the KNN vs. Linear regression case study, but you won't get that far}
+
+That's okay because its the topic for next week! 
+
+
 
 
 
