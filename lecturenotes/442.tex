@@ -49,6 +49,11 @@
 % Format for log entries: \logentry{<Date>}{<Notes>}
 \newcommand{\groupmeetingnotes}[2]{\paragraph{{{\textcolor{Violet}{Group Research Meeting Notes $\cdot$ #1:}}}} #2}
 
+
+
+% USEFUL COMMANDS 
+\newcommand{\xte}{x^{\mathrm{test}}} 
+\newcommand{\yte}{y^{\mathrm{test}}} 
 %--------------------------------
 % Edit title page material here
 %--------------------------------
@@ -84,9 +89,9 @@
 
 Classical statistics is built on the scientific method. It assumes that we start with a hypothesis, and then we go out and we collect data that can be used to test this hypothesis. Importantly, the statistical methods that we will use to test this hypothesis are pre-specified; we choose them before we ever look at our data. \\
 \\
-For example, maybe we come up with the hypothesis that college students who sleep more than 7 hours per night have higher average GPAs than those who sleep less than 7 hours per night. We then go out and take a random sample of students, and ask them all if they sleep more than 7 hours per night, and also ask for their GPA. We then use a t-test to test if there is a statistically significant different in GPA between students who sleep more or less than 7 hours per night. \\
+For example, maybe we come up with the hypothesis that college students who sleep more than 7 hours per night have higher average GPAs than those who sleep less than 7 hours per night. We then go out and take a random sample of students, and ask them all if they sleep more than 7 hours per night, and also ask for their GPA. We then use a t-test to test if there is a statistically significant difference in GPA between students who sleep more or less than 7 hours per night. \\
 \\
-Statistical learning is different. While there is no single, satisfying definition of statistical learning, it refers generally to a collection of tools used to make sense of complex data. Importantly, we don't always start with a pre-specified hypothesis. In this ``big data" era that we are living in, statistical learning has become very important. \\
+Statistical learning is different. While there is no single, satisfying definition of statistical learning, it refers generally to a collection of tools used to make sense of complex data. Unlike classical statistics, where a hypothesis is defined before data collection, statistical learning often involves discovering patterns in data without an initial hypothesis. \\
 \\
 In the context of our motivating example, suppose that we collect a large survey of students at a college. We are generally interested in what factors impact the GPA of a college student. We search through the data, try different models, and end up realizing that ``hours of sleep per night" seems to be an important factor in determining GPA: more important than, say, major, whether or not you are a varsity athlete, etc. However, we also realize that the relationship between hours of sleep per night and GPA does not look linear. We decide to turn ``hours of sleep per night" into a binary variable: yes/no do you sleep more than 7 hours per night. We have ended up with the same ``model" as before, but this was a much more exploratory process. It started with a general task of \emph{prediction} (as opposed to a specific model or hypothesis), and used \emph{variable selection} and \emph{feature engineering} to settle on a final model. I would consider this to be an example of statistical learning. \\
 \\
@@ -235,10 +240,90 @@ Linear regression in theory takes some time to train, but it is nearly instantan
 
 \subsubsection{Comparison}
 
-If KNN is so flexible, why wouldn't we always prefer KNN to linear regression? This is the topic of our next class! 
+If KNN is so flexible, why wouldn't we always prefer KNN to linear regression? This is the topic of our next class, which I will preview right now, but we likely will not get to it!  
+
+\subsection{The bias-variance tradeoff}
+
+Let's return to the notion of expected prediction error, and let's break it down into even more components than we did in \eqref{eq_red_irr}. 
+
+Suppose that we train our model $\hat{f}$ on a dataset $\bold{X}^\mathrm{train}, \bold{y}^\mathrm{train}$. Since this dataset is random, the function $\hat{f}()$ is also random. Now, suppose that we would like to know about the expected prediction error for a new datapoint with $X=x^\mathrm{test}$ and unknown $Y=\yte$. The prediction error itself is 
+$
+\left(\yte - \hat{f}(\xte)\right)^2
+$, but to find the \emph{expected} prediction error we need to take the expected value over multiple sources of randomness. 
+
+For our purposes, let's treat $\xte$ as fixed. We want to find the average prediction error that we would obtain if we repeatedly (1) sampled training sets of size $n$ from the population, (2) refit the function $\hat{f}$ using this training data, and (3) evaluated the squared prediction error for a datapoint drawn with $X = \xte$. So, we want to evaluate: 
+\begin{align*}
+	E_{\bold{X}^\mathrm{train}, \bold{y}^\mathrm{train},Y \mid X=\xte}\left[\left(Y - \hat{f}(X)\right)^2 \mid X=\xte \right] &= 	E_{\bold{X}^\mathrm{train}, \bold{y}^\mathrm{train},Y \mid X=\xte}\left[\left(Y - \hat{f}(\xte)\right)^2 \mid X=\xte \right]. 
+\end{align*}
+For brevity, I am not going to keep writing the subscripts in the expected values. I am going to assume that we are treating $\xte$ as fixed but taking the expected value over all other randomness. But remember that it is always good to know what exactly you are taking the expected value over! \\
+\\
+To break this quantity down, we are going to do a clever trick that involves adding and subtracting $0$ twice. This is a very common proof technique! After we do this, we expand our big squared quantity by thinking of it as $(a+b+c)^2$, and we apply linearity of expectation to put each term in its own expected value.  
+\begin{align*}
+  E\left[\left(Y - \hat{f}(\xte)\right)^2 \right] &=   E\left[\left(Y  \textcolor{red}{-f(\xte) + f(\xte)} \textcolor{blue}{-E[\hat{f}(\xte)] + E[\hat{f}(\xte)]} -  \hat{f}(\xte)\right)^2 \right]  \\
+  &= E\left[\left(Y -f(\xte)\right)^2\right] + E\left[\left(f(\xte) - E[\hat{f}(\xte)]\right)^2\right] + E\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)^2\right] \\
+  & + 2 \textcolor{orange}{E\left[\left(Y -f(\xte)\right) \left(f(\xte) - E[\hat{f}(\xte)]\right)\right]}\\
+  & + 2 \textcolor{purple}{E\left[\left(Y -f(\xte)\right) \left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right]} \\
+  & + 2  \textcolor{olive}{E\left[\left(f(\xte) - E[\hat{f}(\xte)]\right) \left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right].  }
+\end{align*}
+We will now argue that each of the cross terms is $0$. We start with the orange term, and note that: 
+\begin{align*}
+\textcolor{orange}{E\left[\left(Y -f(\xte)\right) \left(f(\xte) - E[\hat{f}(\xte)]\right)\right]} &= \left(f(\xte) - E[\hat{f}(\xte)]\right) E\left[ Y -f(\xte)\right]\\
+&= \left(f(\xte) - E[\hat{f}(\xte)]\right) \left( E[Y] -f(\xte)\right)\\
+&= 	\left(f(\xte) - E[\hat{f}(\xte)]\right) \left(f(\xte) -f(\xte)\right) = 0. 
+\end{align*}
+The first two equalities follow because the quantities $f(\xte)$ and $E[\hat{f}(\xte)]$ are not random, since $\xte$ is a constant. The last equality follows since, because we are conditioning on $X = \xte$, $Y = f(\xte) + \epsilon$, and so by our assumption that $E[\epsilon]=0$, $E[Y] =f(\xte)$. 
+
+We now consider the purple term. We note that $Y-f(\xte)$ is independent of the training dataset, since $f()$ is non-random and $Y$ is a new realizations. On the other hand, $\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)$ is a function only of the training data, since $\xte$ is non-random. Thus, this term has the form $E[ab]$ where $a$ and $b$ are independent. So we can write it as: 
+\begin{align*}
+ \textcolor{purple}{E\left[\left(Y -f(\xte)\right) \left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right]} &= 	E\left[ Y -f(\xte)\right] E\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right] \\
+ &= E\left[ Y -f(\xte)\right] \left(E[\hat{f}(\xte)] -   E\left[\hat{f}(\xte)\right] \right) = 0. \\
+\end{align*}
+
+Finally, we consider the green term. 
+\begin{align*}
+\textcolor{olive}{E\left[\left(f(\xte) - E[\hat{f}(\xte)]\right) \left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right]} &= \left(f(\xte) - E[\hat{f}(\xte)]\right) E\left[ \left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right] \\
+&= \left(f(\xte) - E[\hat{f}(\xte)]\right) \left(E[\hat{f}(\xte)] -   E\left[ \hat{f}(\xte) \right]\right) = 0. 
+\end{align*}
+
+Now that we know that all three cross terms are $0$, we know that 
+\begin{align*}
+ E\left[\left(Y - \hat{f}(\xte)\right)^2 \right] &= E\left[\left(Y -f(\xte)\right)^2\right] + E\left[\left(f(\xte) - E[\hat{f}(\xte)]\right)^2\right] + E\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)^2\right]. 
+\end{align*}
+Our next goal is to understand each of these terms! 
+
+The first term can be written as:
+$$
+E\left[\left(Y -f(\xte)\right)^2\right] = E\left[\left(f(\xte)+\epsilon -f(\xte)\right)^2\right] = E\left[\epsilon^2\right] = Var(\epsilon).  
+$$
+This is our irreducible error term! 
+
+In the second term,$f(\xte)$ and $E[\hat{f}(\xte)]$ are not random, so we do not need the expected value! This just becomes
+$$
+\left(f(\xte) - E[\hat{f}(\xte)]\right)^2,
+$$
+which we call the squared bias. Is $\hat{f}(\xte)$ equal to $f(\xte)$ on average? If so, then $\hat{f}$ is unbiased and this term will disappear. 
+
+Finally, in the third term: 
+$$
+ E\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)^2\right] =  Var\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right]  + E\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right]^2.
+$$
+First, note that $Var\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right] = Var\left[\hat{f}(\xte)\right]$, because $E[\hat{f}(\xte)]$ is not random. Then, note that $E\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right] = E[\hat{f}(\xte)] -  E\left[\hat{f}(\xte)\right] = 0$. So, this third term is simply the variance (with respect to the training set) of $\hat{f}(\xte)$. 
+
+
+This was a lot of work, but we can finally say that, at a given point $\xte$,  
+\begin{align*}
+ E\left[\left(Y - \hat{f}(\xte)\right)^2 \right] &= Var(\epsilon) + Bias(\hat{f}(\xte))^2 + Var(\hat{f}(\xte)). 
+\end{align*}
+This is the bias variance decomposition, which will be important throughout the semester! 
+
+%\section{Monday: 2/10: Exploring KNN vs. Linear Regression}
+
 
 
 \end{document} 
+
+
+
 
 
 
