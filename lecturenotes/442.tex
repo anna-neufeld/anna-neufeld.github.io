@@ -229,19 +229,13 @@ The hyper-parameter $k$ is chosen by the user. When $k=n$, KNN just predicts $\b
 
 Note that KNN directly approximates $E[Y \mid X=x]$ \emph{locally}, making no assumptions on the structure of $E[Y \mid X]$. When $k$ is small, the estimation of $E[Y \mid X=x]$  uses only data that are really close to $x$, which is desirable if we believe a very local approximation is necessary. However, when $k$ is small, each prediction is made using only a few datapoints, which makes the predictions less stable and more variable. We will explore this tradeoff thoroughly next class!
 
+Linear regression is parametric; we can write down the function $\hat{f}$ by writing down the estimated values of two parameters. KNN is non-parametric; we cannot write down the function $\hat{f}$ without storing the entire dataset. T
+
+Linear regression in theory takes some time to train, but it is nearly instantaneous to make new predictions. KNN involves no training step, but it could be computationally expensive to obtain new predictions. 
+
 \subsubsection{Comparison}
 
-The contrast between linear regression and KNN suggests several points for comparison, which we will continue discussing next class. These are:
-\begin{itemize}
-\item If KNN is so flexible, why wouldn't we always prefer KNN? 
-\item Linear regression is parametric; we can write down the function $\hat{f}$ by writing down the estimated values of two parameters. KNN is non-parametric; we cannot write down the function $\hat{f}$ without storing the entire dataset. 
-\item Linear regression in theory takes some time to train, but it is nearly instantaneous to make new predictions. KNN involves no training step, but it could be computationally expensive to obtain new predictions. 
-\item Right now, linear regression has no hyper-parameter and KNN does! How do we choose $k$? Is the fact that linear regression has no hyper-parameter an advantage? 
-\end{itemize}
-
-
-
-
+If KNN is so flexible, why wouldn't we always prefer KNN to linear regression? This is the topic of our next class! 
 
 
 \end{document} 
