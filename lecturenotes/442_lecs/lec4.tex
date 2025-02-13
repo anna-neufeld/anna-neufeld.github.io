@@ -1,0 +1,148 @@
+\section{Monday, 2/17: Feature selection, feature engineering, and regularization!}
+
+We ended last class by talking about how both KNN and Linear Regression can do badly when the number of variables $p$ is very large! There are two distinct problems.
+\begin{itemize}
+\item For linear regression with no preprocessing, increasing $p$ just increases the model complexity of a linear regression model. This allows us to overfit (or memorize) our training set, which leads to very high variance and poor test error. 
+\item For KNN, $p$ doesn't really have anything to do with model complexity, but we do poorly because of the curse of dimensionality. KNN works best when we have training points that are dense in our feature space, because this means that the $k$ nearest neighbors to a test point $x$ are actually close to $x$. As $p$ grows, it is really really hard for points to be dense ($n$ would need to be HUGE), and so we are making predictions with neighbors that aren't really that close (bias) and who our neighbors actually are is affected by noise in so many different predictors (variance). 
+\end{itemize}
+Real data is high dimensional! So we really need a way around these issues! Today, we will talk about two strategies for avoiding issues with high dimensions.
+\begin{itemize}
+\item \textbf{Strategy 1: }	Preprocess the data to reduce the dimension before we apply the algorithm. Within strategy 1, we have two sub-strategies. 
+\begin{itemize}
+\item \textbf{Feature selection}: You have all used this for linear regression; it's a really natural fit. It definitely \emph{could} be used for KNN, but you would need to pick some sort of selection algorithm that might not have anything to do with KNN. 
+\item \textbf{Feature extraction}: Can do this before KNN, linear regression, or any other algorithm. 
+\end{itemize}
+\item \textbf{Strategy 2: }	Modify the algorithm using \textbf{regularization}to automatically reduce the variance.
+\begin{itemize}
+\item We are going to talk about this in the context of linear regression, not KNN.
+\item The concept (Regularization!!) will be relevant to any algorithm we use this semester that gets fit by minimizing a loss function. KNN is one of the only algorithms that we will use this semester that doesn't have this loss-function form, and so regularization is not directly applicable. 
+\end{itemize}
+\end{itemize}
+
+Let's talk about each of these!
+
+\Large
+\textcolor{red}{PLEASE TREAT EVERYTHING BELOW HERE AS MAJOR DRAFT UNTIL CLASS ON MONDAY. NOT EDITED YET.}
+
+\normalsize
+
+\subsection{Feature selection}
+
+The idea is that if we have $p$ predictors $\left\{X_j : j \in \{1,\ldots,p\}\right\}$ but we don't think that all of them are relevant, we should select a subset $\mathcal{S} \in \{1,\ldots,p\}$. We should then do our statistical learning algorithm using only $\left\{X_j : j \in \mathcal{S} \right\}$. If we do a good job with selection, we should improve our performance. 
+
+\subsubsection{Guess and check}
+
+Let's first talk about feature selection for linear regression. This is easy because you have all done it before! 
+
+In linear regression, we have some methods to do this in an interactive way! You all did this in Stat 202 or 346. Look at p-values, remove variables that don't seem significant, etc.
+
+\subsubsection{Best subset regression}
+
+More formally, to help with variance, we want to let:
+\begin{equation}
+\label{sparse}	
+\hat{\beta} = \mathrm{argmin}_{b \in \mathbb{R}^p} \ \ \ \sum_{i=1}^n \left( y_i - x_i^T b \right)^2 + ||b||_0,
+\end{equation}
+where
+$$
+||b||_0 = \{ \#i : b_i \leq 0 \}.
+$$
+We are just saying that we want to fit a linear regression with a \emph{sparse} solution. Because sparse solutions are interpretable, and also because we know they will have lower variance! 
+
+Can we actually solve \eqref{sparse}? 
+
+
+If $p$ is small, we could just try out out fitting least squares models to all of the different subsets $S \subset \{1,\ldots,p\}$. We could then directly compare the value of  \eqref{sparse} for every possible subset, and if we pick the subset that leads to the lowest value we have our solution! This is best-subset regression, and I think you should have heard about it in Stat 346! Best-subset regression is kind of silly, because it is computationally infeasible when $p$ is big, which is exactly the situation in which we need it! 
+
+Because \eqref{sparse} will essentially be infeasible to solve exactly, we can come up with ways to approximate it. 
+
+\subsubsection{Forward stepwise regression}
+
+The idea of forward stepwise regression is simple:
+\begin{itemize}
+\item Start with an empty model that only includes an intercept
+\item Until a stopping criteria is met:
+\begin{itemize}
+\item Look through all possible predictors that are not yet in the model. Add the predictor that most improves the model at this moment! 
+\end{itemize}	
+\end{itemize}
+
+We get to decide what we mean by ``most improves the model". We could, at each step, add the most significant predictor, or the one that most improves $R^2$, etc.
+
+We could use a stopping criteria such as: ``until the BIC stops improving" or ``until no variable that could be added has a p-value less than 0.05". If we do this, then the size of our final model is determined for us, using only the training set.
+
+We could also use no stopping criteria, and just go until we run out of predictors, or until the number of predictors is equal to the number of datapoints. If we do this, we get a sequence of nested models, where the variables were added in a greedy order. We could select our final model size by seeing which of these nested models minimizes the test set error, for example. You do this on your homework.  
+
+Note that backwards stepwise regression is also a thing that you may have learned about in Stat 346. I think it is unsatisfying when we are discussing high dimensional regression, since it cannot be used for $p > n$ (since you cannot fit the initial model to step backwards from). 
+
+I think you all know a bit about feature selection for linear regression from Stat 346! So I will not talk too much more about it.
+
+\subsubsection{Feature selection for KNN??}
+
+KNN does not lend itself to a built-in way to do feature selection, as far as I know. We could ``try out fitting KNN with different features included or removed", and compare test MSE for different options. This is a lot like best-subset selection; it is computationally infeasible to try out all possible options. We could also run something like stepwise linear regression as a preprocessing step to KNN. This would be a strange thing to do, but the idea would be that we think we need wiggly functions (hence KNN), but we first want to have some efficient way to select variables that seem associated with $Y$.
+
+\subsubsection{Overview:}
+
+In general, what does feature selection get us, and what are the risks? 
+\begin{itemize}
+\item \textbf{Interpretability:} selecting a small number of features makes our final model more interpretable. 
+\item \textbf{Usability:} A user might need to tune a hyper-parameter such as ``how many variables to save after stepwise regression". This makes everything a bit more complicated, but at least the tuning parameter is interpretable, and automated procedures exist. 
+\item \textbf{Bias:} If we fail to include an important variable, we could introduce bias. In other words, we could accidentally select a model that is too simple. 
+\item \textbf{Variance:} The whole point of feature selection is to reduce variance! It definitely does this; we can see this in an R demo.
+\item \textbf{Computational efficiency:} Some methods like best subset selection and stepwise regression could be slow. So the actual selection step can be slow. But in general, if we select only some features from our data and use these for the rest of our analyses, we have less data to store and we will make downstream tasks faster I suppose. 
+\end{itemize}
+
+
+\subsection{Feature extraction}
+
+The idea is that if we have $p$ predictors $\left\{X_j : j \in \{1,\ldots,p\}\right\}$ but we think that a lot of them are redundant, maybe we can compress the information from the $p$ features into a smaller number of features $\left\{ \tilde{X}_k = f_k(\bold{X}) : k \in \{1,\ldots, S\} \right\}$. Each of the $S$ new features can contain information from all of the old features.  
+
+Consider image classification. Our high-dimensional set of predictors is every pixel in an image. Feature selection will work terribly here: we can't just select some of the pixels for every image and expect to do a good job. But there are probably low-dimensional concepts hidden in the images that can capture all of the information that we need, without storing every single pixel. Thus, image classification is a setting where feature extraction is really helpful but where feature selection makes no sense.
+
+Here are a few examples:
+
+\begin{itemize}
+\item The new features $\tilde{X}_k$ for  $k \in \{1,\ldots, S\}$ could be the first $S$ principal components of the original feature matrix $\bold{X}$. \begin{itemize}
+\item An issue is that we still need to choose $S$. Is this now another tuning parameter, in the way that $K$ for $KNN$ is a tuning parameter?? 
+\end{itemize}
+\item It turns out that you can randomly project your original feature matrix $\bold{X}$ into a lower dimensional subspace to get $\tilde{X}$. Magical theorems say that the distances between observations are approximately preserved under random projections, and so this can work pretty well as a preprocessing step to KNN. 
+\item PCA and random projections are linear embeddings. You could use something like UMAP or tSNE as a non-linear embedding. These are popular in genomics! They put your points onto a low-dimensional manifold. 
+\end{itemize}
+
+PCA is a really classic example, and I think that you are all familiar with PCA from Stat 346. I included a little sidebar on PCA below, just in case we have time to go over it or just in case you are curious. But how PCA actually works is not really our topic for today. 
+
+The general idea of any of these is that we can avoid the curse of dimensionality if we can capture most of the information about our $\bold{X}$ variables in fewer dimensions. This is going to work best when we have a lot of redundant predictors. 
+
+\subsubsection{PCA}
+
+In the simplest case, if we assume that our feature matrix $X$ has been centered and scaled so that the mean of each variable is $0$ and the standard deviation of each variable is $1$, and we also assume that $n > p$, then we can take the singular value decomposition of $X$, and write it as 
+$$
+X = U D V^T, 
+$$
+where $U \in \mathbb{R}^{n \times p}$ is a matrix whose columns are orthogonal unit vectors, $D \in \mathbb{R}^{p \times p}$ is a diagonal matrix, and $V \in \mathbb{R}^{p \times p}$ is an orthonormal matrix. 
+
+The columns of $V$ define a new set of axes in our predictor space. $V_1$ represents the direction that contains as much of the variance in $X$ as possible. $V_2$ represents the direction orthogonal to $V_1$ that explains as much of the leftover variance as possible, and so on. In PCA-speak, these are called the loadings. They correspond to the eigenvectors of the correlation matrix of the data $X$, and are ordered in such a way that $V_1$ corresponds to the biggest eigenvalue, $V_2$ to the second biggest eigenvalue, etc. 
+
+If the columns of $V$ are the axes, then the columns of $U D$ store the position of each datapoint along these axes. We call these the scores. 
+
+Let $U_{r}$ denote the first $k$ columns of $u$, let $D_r$ denote the first $r$ rows and columns of $D$, and let $V_r$ denote the first $r$ columns of $V$. Then, the matrix
+$$
+U_r D_r V_r^T, 
+$$
+is the ``best" (according to mean-squared-error or L2-norm) rank-r approximation to $X$. 
+
+What this means is that if we let $\tilde{X} = U_r D_r \in \mathbb{R}^{n \times r}$, we have made ourselves $r$ new variables that store ``as much of the variation in $X$ as possible". The new variables are also independent of one another, so there is no multicollinearity left. We can use this $\tilde{X}$ in our downstream task. We probably only want to do this if it stores a large proportion of the total variance in $X$: we can plot this proportion of variance vs. $r$ to help decide how many principal components to keep! 
+
+
+
+\subsubsection{Overview}
+
+In general, what does feature extraction get us, and what are the risks? 
+\begin{itemize}
+\item \textbf{Interpretability:} Often, feature extraction can make a final model less interpretable. Occasionally, you can get lucky, and identify your top few principal components as recognizable concepts. 
+\item \textbf{Usability:} You need to figure out how to extract features, how many PCs to keep, etc. This adds a tuning task that I think is less straightforward than the selection task. 
+\item \textbf{Bias:} If you don't retain enough good information about $\bold{X}$, you could introduce bias. 
+\item \textbf{Variance:} The point is to reduce variance! 
+\item \textbf{Computational efficiency:} Story is the same as for feature selection. Something like UMAP is computationally hard to run, but it saves you time and space down the road because you don't need to explore your entire high dimensional dataset anymore. 
+\end{itemize}
+
