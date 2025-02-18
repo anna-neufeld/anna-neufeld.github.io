@@ -256,6 +256,26 @@ I am sure I forgot some key points and I am sure we will be rushed! We will do o
 In general, even if Ridge and Lasso got smushed into one lecture in this class, I hope that you will remember them forever! They are really fundamental concepts! We have ridge/lasso logistic regression too- it's not only a linear regression thing! It's a really beautiful example of the bias-variance tradeoff and the interplay between optimization and statistics!
 
 \section{Thursday, 2/20: Wrap up regularization, introduction to classification}
+
+\subsection{Wrap up from last time}
+
+...
+
+\subsection{What is classification}
+
+We are switching gears! We assume that we still have a setup with $n$ observations, $p$ predictors in $X$, and one response variable $y$. But now we assume that $y$ is a categorical variable! 
+
+We still believe that there is some \emph{true} data generating process that generates $y$ from $X$, with some noise. However, it may not make sense anymore to write $y = f(X) + \epsilon$. Because, if $y$ is a category, what form does the noise $\epsilon$ take on?
+
+To study this \emph{classification} problem, we need some new language! 
+
+Let's start where the simplest case where there are only two possible categories for $y$, and for simplicity, let's encode them as $0$ and $1$. If we think that $y_i$ is related to $x_i$, but that there is also some random noise in $y_i$, then the reasonable thing to do is to model: 
+$$
+Y_i \mid X_i \sim \mathrm{Bernoulli}\left( f(X_i) \right). 
+$$
+The idea once again is that $f()$ is some true, unknown function. We really want to estimate $f()$: either just because we want to make good predictions in the future, or because we want to understand and interpret which predictors $X$ are most contributing to $Pr(Y_i=1)$. 
+
+
 %\begin{itemize}
 %\item What is classification? How do we evaluate a classifier?
 %\item The Bayes classifier
