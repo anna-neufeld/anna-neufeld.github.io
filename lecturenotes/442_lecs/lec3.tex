@@ -106,6 +106,35 @@ We ran out of time before we could talk about what to do about this! We will tal
 
 
 
+\subsection{Miscellaneous}
+
+People asked good questions in class, so here are some extra points that I wanted to add! 
+
+\begin{itemize}
+\item Another big advantage of linear regression over KNN is that we have theory that lets us do inference (e.g. prediction intervals!) to rigorously quantify our uncertainty for linear regression. 
+\begin{itemize}
+\item This inference depends on some number of assumptions about the underlying data generating mechanism. For example, the typical inference that we do assumes homoskedasticity (equal variance of our errors), but robust/sandwich standard errors let us relax this assumption (at the possible cost of statistical power). 
+\item We like that KNN requires no assumptions whatsoever: we don't need to believe that our model is truly linear, etc. But a downside of this lack of assumptions is that we don't have many tools available to make prediction intervals! This is a typical tradeoff: we would love to avoid assumptions, but usually avoiding assumptions also means we can't say much about our final answer!
+\item Off the top of my head, I don't know much about inference for KNN. But I included some random thoughts below! 
+\item For KNN with $K=3$, each prediction is based on three datapoints! Without additional assumptions, there is going to be a LOT of uncertainty associated with this prediction. 
+\item Later in the semester, we will talk about conformal inference, which lets us make prediction intervals for any machine learning model. This could be applied to KNN!
+\item To make a prediction interval, we need both an estimate but also a measure  of sampling uncertainty associated with this estimate. Maybe we could use bootstrapping to estimate the SE of a KNN prediction and make an interval based on that? When I googled ``inference for KNN", I found a bunch of suggestions about bootstrapping! It would be interesting to try this out and see if it works! 
+\begin{itemize}
+\item A sketch of the idea: Get $B$ different KNN predictions for a point $\xte$ by using different random bootstrap subsamples of the training dataset each time. Then, compute the standard deviation of these $B$ predictions. Then, get your main prediction $\hat{y}^{test}$ using all of the data. Let $\hat{y}^{test} \pm 2 \hat{SD}(\hat{y}^{test})$ be your prediction interval. Would this cover the true $y^{test}$ 95\% of the time? I am not sure because KNN is strange and bootstrapping does have theory/requirements. Let's try it out in a future R demo during lecture. 
+\end{itemize}
+\end{itemize}
+\item We mentioned that KNN requires storing the entire dataset to make test predictions, and that it is inefficient. This is not strictly speaking true, because people have made smart algorithms for getting around this problem.
+If you google ``KNN with KD tree or Ball tree" you will find a lot of resources on fast algorithms. These are the ones that I learned about in my ML class, but I think a lot of others exist too!
+\item Someone asked if you need to store the entire training dataset to fit a linear regression model. It turns out that you don't! I will put a reading on your HW about ``online learning" for linear regression. The idea is that, instead of storing our training dataset $X,y$ all at once and computing $\hat{\beta} = (X^T X)^{-1} X^T y$, we can instead write $\hat{\beta}$ as:
+$$
+\hat{\beta} = \argmin_b \sum_{i=1}^n (y_i - x^T b)^2
+$$
+and assume that we only have access to a single example $x_i, y_i$ at a time. We have algorithms that can step along the gradient of this loss function according to one example $x_i, y_i$ at a time in order to find the minimum. So the full data never needs to be stored! 
+\item I'm sure there are things I forgot. Keep asking good questions!
+\end{itemize}
+
+
+
 
 
 
