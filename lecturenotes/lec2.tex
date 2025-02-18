@@ -1,0 +1,184 @@
+\section{Monday, Feb 10: The bias variance tradeoff, as illustrated with KNN and linear regression}
+
+Like last class, we will focus on a really simple regression setting. We observe a single response $\bold{y} \in \mathbb{R}^n$ and a single predictor $\bold{x} \in \mathbb{R}^n$. We assume that our observations are i.i.d. realizations of random variables $(X,Y)$, where
+$$
+Y = f(X) + \epsilon.
+$$
+We assume that $E[\epsilon]=0$ and $\epsilon \perp\!\!\!\perp X$, but the function $f()$ is unknown. Our goal is to find a function $\hat{f}$ such that $Y \approx \hat{f}(X)$. In this unit, we will talk about different algorithms for finding such a function $\hat{f}$!
+
+We will assume that we are looking for $\hat{f}$ that makes the squared error loss:
+$$
+\left(Y - \hat{f}(X)\right)^2
+$$ 
+small on average. Today we are going to talk a lot about this goal. And we are going to talk about how well KNN and linear regression each achieve this goal. 
+
+For today, we are using squared error loss everywhere. But please remember that this is not the only way to measure model accuracy! The exact math of the bias-variance decomposition that we will discuss today holds only for squared error loss, but similar concepts apply for other loss functions. 
+
+Here is the agenda for today:
+\begin{enumerate}
+\item Training error vs. expected test error. 
+\item The bias-variance decomposition of the expected test error. 
+\item What is the ideal function for minimizing the expected test error?
+\item How do KNN and Linear Regression each approximate this ideal function?
+\item R Demo of KNN and Linear regression and the bias variance tradeoff. 
+\end{enumerate}
+We might move a little bit fast, but HW1 is going to give you a chance to practice all of these concepts. 
+
+\subsection{Training error vs. test error}
+
+If we use our dataset $\bold{y} \in \mathbb{R}^n$ and $\bold{x} \in \mathbb{R}^n$ to \emph{train} a function $\hat{f}$, then our \emph{training error} is:
+$$
+MSE_\mathrm{train} =  \frac{1}{n} \sum_{i=1}^n \left( y_i - \hat{f}(x_i)\right)^2. 
+$$
+For a fixed function $\hat{f}$ that we already trained, if we observe some test points $\xte_i, \yte_i$ for $i=1,\ldots, n_\mathrm{test}$, we can compute our test error as 
+$$
+MSE_\mathrm{test} =  \frac{1}{n_\mathrm{test}} \sum_{i=1}^{n^{\mathrm{test}}} \left( \yte_i - \hat{f}(\xte_i)\right)^2, 
+$$
+where the important thing is that the points $x_i^\mathrm{test}, y_i^{\mathrm{test}}$ were not used to compute the function $\hat{f}$. 
+
+While in practice we usually do compute $MSE_\mathrm{test}$ over some fixed test set that has size $n_\mathrm{test}$, we don't want our notion of model performance to be specific to the test set that we happened to see. We are likely studying $MSE_\mathrm{test}$ to estimate how big our error will be on a random new datapoint. In this case, we might be computing this for the particular function  $\hat{f}$ that we already computed. In this case, our expected prediction error conditional on our particular function $\hat{f}$ that we already computed is: 
+
+$$
+E_{\Xte, \Yte}\left[ \left( \Yte - \hat{f}(\Xte)\right)^2 \right],
+$$
+where the function $\hat{f}$ is not treated as random.
+
+If we want to evaluate the potential of an algorithm or a procedure to make good predictions, then we want to take into account the randomness in our training set. We want to acknowledge that we could have seen a different training set that would have given us a different function $\hat{f}$. With this in mind, in the next section we will define a more complex notion of expected prediction error. This more complex notion will let us come up with a very beautiful decomposition!
+
+\subsection{The bias-variance tradeoff}
+
+Suppose that we train our model $\hat{f}$ on a dataset $\bold{X}^\mathrm{train}, \bold{y}^\mathrm{train}$. Since this dataset is random, the function $\hat{f}()$ is also random. Now, suppose that we would like to know about the expected prediction error for a new datapoint with $X=x^\mathrm{test}$ and unknown $Y=\yte$. The prediction error itself is 
+$
+\left(\yte - \hat{f}(\xte)\right)^2
+$, but to find the \emph{expected} prediction error we need to take the expected value over multiple sources of randomness. 
+
+For our purposes, let's treat $\xte$ as fixed. We want to find the average prediction error that we would obtain if we repeatedly (1) sampled training sets of size $n$ from the population, (2) refit the function $\hat{f}$ using this training data, and (3) evaluated the squared prediction error for a datapoint drawn with $X = \xte$. So, we want to evaluate: 
+\begin{align*}
+	E_{\bold{X}^\mathrm{train}, \bold{y}^\mathrm{train},Y \mid X=\xte}\left[\left(Y - \hat{f}(X)\right)^2 \mid X=\xte \right] &= 	E_{\bold{X}^\mathrm{train}, \bold{y}^\mathrm{train},Y \mid X=\xte}\left[\left(Y - \hat{f}(\xte)\right)^2 \mid X=\xte \right]. 
+\end{align*}
+For brevity, I am not going to keep writing the subscripts in the expected values. I am going to assume that we are treating $\xte$ as fixed but taking the expected value over all other randomness. But remember that it is always good to know what exactly you are taking the expected value over! \\
+\\
+To break this quantity down, we are going to do a clever trick that involves adding and subtracting $0$ twice. This is a very common proof technique! After we do this, we expand our big squared quantity by thinking of it as $(a+b+c)^2$, and we apply linearity of expectation to put each term in its own expected value.  
+\begin{align*}
+  E\left[\left(Y - \hat{f}(\xte)\right)^2 \right] &=   E\left[\left(Y  \textcolor{red}{-f(\xte) + f(\xte)} \textcolor{blue}{-E[\hat{f}(\xte)] + E[\hat{f}(\xte)]} -  \hat{f}(\xte)\right)^2 \right]  \\
+  &= E\left[\left(Y -f(\xte)\right)^2\right] + E\left[\left(f(\xte) - E[\hat{f}(\xte)]\right)^2\right] + E\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)^2\right] \\
+  & + 2 \textcolor{orange}{E\left[\left(Y -f(\xte)\right) \left(f(\xte) - E[\hat{f}(\xte)]\right)\right]}\\
+  & + 2 \textcolor{purple}{E\left[\left(Y -f(\xte)\right) \left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right]} \\
+  & + 2  \textcolor{olive}{E\left[\left(f(\xte) - E[\hat{f}(\xte)]\right) \left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right].  }
+\end{align*}
+We will now argue that each of the cross terms is $0$. We start with the orange term, and note that: 
+\begin{align*}
+\textcolor{orange}{E\left[\left(Y -f(\xte)\right) \left(f(\xte) - E[\hat{f}(\xte)]\right)\right]} &= \left(f(\xte) - E[\hat{f}(\xte)]\right) E\left[ Y -f(\xte)\right]\\
+&= \left(f(\xte) - E[\hat{f}(\xte)]\right) \left( E[Y] -f(\xte)\right)\\
+&= 	\left(f(\xte) - E[\hat{f}(\xte)]\right) \left(f(\xte) -f(\xte)\right) = 0. 
+\end{align*}
+The first two equalities follow because the quantities $f(\xte)$ and $E[\hat{f}(\xte)]$ are not random, since $\xte$ is a constant. The last equality follows since, because we are conditioning on $X = \xte$, $Y = f(\xte) + \epsilon$, and so by our assumption that $E[\epsilon]=0$, $E[Y] =f(\xte)$. 
+
+We now consider the purple term. We note that $Y-f(\xte)$ is independent of the training dataset, since $f()$ is non-random and $Y$ is a new realizations. On the other hand, $\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)$ is a function only of the training data, since $\xte$ is non-random. Thus, this term has the form $E[ab]$ where $a$ and $b$ are independent. So we can write it as: 
+\begin{align*}
+ \textcolor{purple}{E\left[\left(Y -f(\xte)\right) \left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right]} &= 	E\left[ Y -f(\xte)\right] E\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right] \\
+ &= E\left[ Y -f(\xte)\right] \left(E[\hat{f}(\xte)] -   E\left[\hat{f}(\xte)\right] \right) = 0. \\
+\end{align*}
+
+Finally, we consider the green term. 
+\begin{align*}
+\textcolor{olive}{E\left[\left(f(\xte) - E[\hat{f}(\xte)]\right) \left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right]} &= \left(f(\xte) - E[\hat{f}(\xte)]\right) E\left[ \left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right] \\
+&= \left(f(\xte) - E[\hat{f}(\xte)]\right) \left(E[\hat{f}(\xte)] -   E\left[ \hat{f}(\xte) \right]\right) = 0. 
+\end{align*}
+
+Now that we know that all three cross terms are $0$, we know that 
+\begin{align*}
+ E\left[\left(Y - \hat{f}(\xte)\right)^2 \right] &= E\left[\left(Y -f(\xte)\right)^2\right] + E\left[\left(f(\xte) - E[\hat{f}(\xte)]\right)^2\right] + E\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)^2\right]. 
+\end{align*}
+Our next goal is to understand each of these terms! 
+
+\begin{enumerate}
+\item The first term can be written as:
+$$
+E\left[\left(Y -f(\xte)\right)^2\right] = E\left[\left(f(\xte)+\epsilon -f(\xte)\right)^2\right] = E\left[\epsilon^2\right] = Var(\epsilon).  
+$$
+This is our irreducible error term! It comes from the inherent noise in our data that cannot be explained by $X$. 
+\item In the second term,$f(\xte)$ and $E[\hat{f}(\xte)]$ are not random, so we do not need the expected value! This just becomes
+$$
+\left(f(\xte) - E[\hat{f}(\xte)]\right)^2,
+$$
+which we call the squared bias. Is $\hat{f}(\xte)$ equal to $f(\xte)$ on average? If so, then $\hat{f}$ is unbiased and this term will disappear. 
+\item Finally, in the third term: 
+$$
+ E\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)^2\right] =  Var\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right]  + E\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right]^2.
+$$
+First, note that $Var\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right] = Var\left[\hat{f}(\xte)\right]$, because $E[\hat{f}(\xte)]$ is not random. Then, note that $E\left[\left(E[\hat{f}(\xte)] -  \hat{f}(\xte)\right)\right] = E[\hat{f}(\xte)] -  E\left[\hat{f}(\xte)\right] = 0$. So, this third term is simply the variance (with respect to the training set) of $\hat{f}(\xte)$. 
+\end{enumerate}
+
+This was a lot of work, but we can finally say that, at a given point $\xte$,  
+\begin{align*}
+ E\left[\left(Y - \hat{f}(\xte)\right)^2 \right] &= Var(\epsilon) + Bias(\hat{f}(\xte))^2 + Var(\hat{f}(\xte)). 
+\end{align*}
+This is the bias variance decomposition, which will be important throughout the semester! 
+
+The $Var(\epsilon)$ term is our irreducible error. No matter how good we are at estimating $f$, this is just the amount of noise in our data, so we will always have this error. On the other hand, we can reduce the bias and the variance terms if we pick a better statistical learning algorithm for estimating $f$. 
+
+Without giving too much away: very simple models tend to have high bias but low variance. Very complex (wiggy) models have low bias (they are never constrained!) but very high variance (they overfit to the training data). To minimize our expected prediction error, we are always looking for functions that hit the sweet spot of complexity! This sweet-spot is usually at the minimum of a U-shaped curve for test-set error! You will make U-shaped curves on your homework this week!
+
+\subsection{The ideal function $\hat{f}$}
+
+Let's briefly forget the training data! If our goal was to minimize 
+$$
+E_{X,Y}\left[\left(Y - \hat{f}(X)\right)^2\right] 
+$$
+and we had all of the resources in the world, what would we choose for $\hat{f}$? 
+
+Well, under the law of total expectation, we can write this as: 
+$$
+E_{X} \left[ E_{Y \mid X} \left[ (Y - \hat{f}(X))^2 \mid X \right] \right].
+$$
+In the inner expected value, $X$ is no longer random, and solving for the point-wise minimum is easy. We have that: 
+$$
+\underset{c}{\mathrm{argmin}} \  \mathrm{E}_{Y \mid X=x} \left[ (Y - c)^2 \mid X=x \right] = E[Y \mid X=x]. 
+$$
+This comes from the fact that an expected squared error is always minimized at a mean. You will prove this on HW1, and you have likely seen it before. 
+
+If $E[Y \mid X=x]$ minimizes the point-wise expected prediction error at every $x$, then the function $\hat{f}(x) = E[Y \mid X=x]$ is the function that minimizes the overall expected prediction error. Of course, we do not know the joint distribution of $X$ and $Y$, and so we cannot simply set $\hat{f}(x)$ to be this conditional expectation. But we can develop methods that attempt to approximate $\hat{f}(x) = E[Y \mid X=x]$ under various sets of assumptions! As we will see today, both KNN and linear regression try to approximate $E[Y \mid X]$. 
+
+\subsection{How close do KNN and Linear Regression get to this ideal function? }
+
+Let's review a really simple case. We have a single numerical response variable $Y$ and a single numerical predictor variable $X$. We observe $100$ datapoints, so $n=100$ and $p=1$. Our goal is to use our dataset $\bold{x} = (x_1, \ldots, x_n)$, $\bold{y} = (y_1,\ldots,y_n)$ to come up with a function $\hat{f}$ such that, on new, unseen data, $Y \approx \hat{f}(X)$. Today, we will consider two methods for coming up with $\hat{f}$. 
+
+\subsubsection{Simple linear regression}
+
+We restrict our attention to $\hat{f}$ that have the form $b_0 + b_1 x$ for $b_0, b_1 \in \mathbb{R}, b_1$. This makes our problem of finding the best $\hat{f}$ easier, because we limited the complexity of the model class that we are considering.  
+
+Based on our training data, we let: 
+\begin{equation}
+\label{ls}
+\hat{\beta}_0, \hat{\beta}_1 = \underset{b_0, b_1}{\mathrm{argmin}} \ \sum_{i=1}^n (y_i - b_0 - b_1 x_i)^2.	
+\end{equation}
+We then let $\hat{f}(X) = \hat{\beta}_0 + \hat{\beta}_1 X$. Under the assumption that $E[Y] = \beta_0 + \beta_1 X$ for some true, unknown $\beta_0$ and $\beta_1$, this solution directly approximates the best possible function $E[Y \mid X]$. 
+
+However, if this assumption does \emph{not} hold, then the linear model is too limiting. The result of limiting our model class so much is that we might have a lot of bias. If our linearity assumption does not hold, then no matter how much data we have $E[\hat{f}(x)]$ just cannot be that close to $f$. This is why simple models can have a lot of bias-- we did not give them enough complexity to be able to capture the true function!
+
+You are all experts in linear regression! So we will not spend too much more space in the notes on it. 
+
+\subsubsection{K-nearest neighbors}
+
+KNN is at the opposite end of the spectrum from linear regression. The premise is quite simple. KNN lets
+\begin{equation}
+\hat{f}(x) = \frac{1}{k} \sum_{x_i \in N_k(x)} y_i,
+\end{equation}
+where $N_k(x)$ is a function that returns the $k$ points in the training set that are closest to the input point $x$ according to some distance metric (for us, Euclidean distance). So, avoiding equations: $KNN$ makes predictions by finding the $k$ training observations with $x_i$ closest to $x$, and predicts that the response for $x$ will be the average of the responses for those $k$ points. 
+
+The hyper-parameter $k$ is chosen by the user. When $k=n$, KNN just predicts $\bar{y} = \frac{1}{n} \sum_{i=1}^n y_i$ for all observations, regardless of $x$. As $k$ decreases, the functions returned by KNN get increasingly wiggly and flexible. When $k=1$, the KNN function is a step function that can be arbitrarily wiggly, and that always has $0$ training error. 
+
+Note that KNN directly approximates $E[Y \mid X=x]$ \emph{locally}, making no assumptions on the structure of $E[Y \mid X]$. When $k$ is small, the 
+estimation of $E[Y \mid X=x]$  uses only data that are really close to $x$. This lets our prediction function get arbitrarily wiggly-- we will not run into an issue of bias. However, with small $k$, there is a lot of variance in each individual prediction, since it is made using very few datapoints. When $k$ is large, there is less variance in the predictions, but we do not let our predictions be as wiggly, and so we introduce more bias. Thus, KNN is a great place to see the bias-variance tradeoff at work. 
+
+A few notes on KNN:
+\begin{itemize}
+\item KNN is non-parametric; we cannot write down the function $\hat{f}$ without storing basically the entire dataset. The number of effective parameters grows with the sample size $n$. 
+\item Linear regression in theory takes some time to train, but it is nearly instantaneous to make new predictions. KNN involves no training step, but it could be computationally expensive to obtain new predictions. 
+\end{itemize}
+
+
+\subsection{Time for an R demo!}
+
+The RMarkdown document that we go over in class will be posted on GLOW! 
