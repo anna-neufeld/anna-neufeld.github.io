@@ -1,0 +1,152 @@
+\section{Thursday, Feb 13: adding more predictor variables!}
+
+Recall our typical regression setting. We assume that our data are i.i.d. realizations of random variables $(X,Y)$, where
+$$
+Y = f(X) + \epsilon.
+$$
+We assume that $E[\epsilon]=0$ and $\epsilon \perp\!\!\!\perp X$, but the function $f()$ is unknown. Our goal is to find a function $\hat{f}$ such that $Y \approx \hat{f}(X)$. 
+
+More specifically, we would like to find $\hat{f}$ that minimizes the expected squared error loss for a new, unseen datapoint $(X,Y)$. So ideally, we are looking for
+\begin{equation}
+\label{objective}
+\mathrm{argmin}_{\hat{f} \in \mathcal{F}} \ \ E_{X,Y} \left[ \left(Y - \hat{f}(X)\right)^2 \right],
+\end{equation}
+where $\mathcal{F}$ is some class of functions. On your homework, you will argue that if $\mathcal{F}$ were totally unconstrained, we would want to set $\hat{f}(x) = \mathrm{E}[Y \mid X=x]$. This argument was also in the Lecture 2 notes, but we skipped it. 
+
+This is where we hit practical issues. We do not know the joint distribution of $X$ and $Y$, and so we cannot pick $\hat{f}$ to be this ideal function $\mathrm{E}[Y \mid X=x]$. And we really cannot search efficiently over all possible real-valued functions $\mathcal{F}$ to find a good choice for $\hat{f}$. So, a statistical learning algorithm typically restricts the class $\mathcal{F}$ to make this task doable. So far in this class, we have discussed two possible methods for picking $\hat{f}$. It turns out that both of these can be viewed as approximating $E[Y \mid X=x]$; they just do this using different sets of assumptions. 
+
+Up until now, we have been assuming that we just have one predictor variable, and so $X$ is a scalar. Today, we will let $X$ be a vector, meaning that we have $p$ predictor variables $X_1, \ldots, X_p$. This is going to introduce a lot more nuance to the comparison between linear regression and KNN!
+
+$\bold{Agenda:}$
+\begin{enumerate}
+\item Linear regression in high dimensions.
+\item KNN in high dimensions. 
+\item R demo, and overall comparison of linear regression vs. KNN, without preprocessing.
+\end{enumerate}
+
+\subsection{Linear regression in high dimensions}
+
+We restrict our model class $\mathcal{F}$ to
+$$
+\mathcal{F} = \{ f : f(x) = b_0 + b^T x, b_0 \in \mathbb{R}, b \in \mathbb{R}^p\},
+$$
+such that \eqref{objective} becomes
+\begin{equation}
+\label{objective_linear}
+\mathrm{argmin}_{b_0 \in \mathbb{R}, b \in \mathbb{R}^p} \ \ E_{X,Y} \left[ \left(Y - b_0 - b^T X \right)^2 \right].
+\end{equation}
+As you know from Stat 346, it is convenient to append a column of $1$s to our predictor matrix $\bold{X}$ so that we are just optimizing over a single $b \in \mathbb{R}^{p+1}$. That way, we don't need to keep writing the intercept separately. Adopting this convention, with linear regression we approximate \eqref{objective_linear} by letting
+\begin{equation}
+\label{eq_linreg}
+\hat{\beta} = \argmin_{b \in \mathbb{R}^{p+1}}  \ \ \ \sum_{i=1}^n \left(y_i - b^T x_i \right)^2. 
+\end{equation}
+You know $1,000$ things about this estimator from Stat 346. For example, as long as $n > p$, the solution to \eqref{eq_linreg} has a closed-form: $(\bold{X}^T\bold{X})^{-1} \bold{X}^T y$. Furthermore, under the assumption that $E[Y \mid X] = \beta^T X$ for some true unknown $\beta$ (i.e. under the assumption that the true model is linear), this estimator is BLUE (best unbiased linear estimator), where ``best" here means lowest variance.\footnote{Do you remember what it means to call this a \emph{linear} estimator? A hint is that it would still be linear even if we used polynomial features like $X^2$.} This is the \emph{Gauss-Markov Theorem}, and I am assuming that you saw it in Stat 346. 
+
+Here are a few pros and cons of linear regression to keep in mind. We will discuss these  a lot, and also revisit them in our R demo.
+
+\begin{itemize}
+\item \textbf{Pro: efficiency: } If $n > p$, we have a closed-form solution. This means that the function is efficient to train. It is also really efficient to generate new predictions. 
+\item \textbf{Con: identifiability: } If $n < p$, we cannot solve for $\hat{\beta}$ because there is no unique solution; the model is not identifiable. 
+\item \textbf{Con: bias: } If the true model is not linear, we will have bias! Because the linear model might simply not be flexible enough to model the true relationship between the predictors and the response.
+\item \textbf{Pro/Con: variance: } Because it is not super flexible, linear regression should be a low-variance method. Unfortunately, when we start adding a lot of irrelevant or redundant predictors to the model, the variance can get very high. 
+\item \textbf{Pro: interpretability: } Linear regression is interpretable! We can look at the estimated function $\hat{f}$ and say what variables are important, and in what direction they are contributing to our predictions. 
+\item \textbf{Pro: usability: } Linear regression is easy to use ``out-of-the-box" for a non-expert. There isn't anything to \emph{tune} if we just regress $y$ on all the variables (which we can do as long as $p < n$. Any refinement that the user wants to do after that is pretty easy to explain/understand.  
+\end{itemize}
+
+\subsection{KNN in high dimensions}
+
+We know that the best solution to $\eqref{objective}$ is $E[Y \mid X=x]$. So, we assume only that $E[Y \mid X=x]$ is smooth enough that:
+$$
+E[Y \mid X=x] \approx E[Y \mid X \text{ is in a neighborhood of } x].
+$$
+We then approximate this function directly by letting:
+$$
+\hat{f}(x) = \frac{1}{k} \sum_{i \in N_k(x)} y_i,
+$$
+where $N_k(x)$ is the $k$ training set datapoints that are closest to the desired test point $x$. 
+
+We didn't emphasize this point when we only had a single predictor variable, but the notion of ``closest" datapoints requires a distance metric! Our distances are now measured in $p$-dimensional predictor space, and we actually have many different distance metrics that we could use. Unless otherwise specified, assume that we are using Euclidean distance. This means that:
+$$
+N_1(\xte) = \argmin_{i = 1,\ldots, n} \sqrt{ \sum_{j=1}^p (\xte_j - x_{ij})^2} = \argmin_{i = 1,\ldots, n} || \xte - x_i ||_2. 
+$$
+Importantly, if your different predictors $x$ are measured with different units, this neighbor function might not even make sense! This neighbor function treats all features the same. If one of our features is ``price of house" and another feature is ``number of bedrooms in house", one of these has values in the hundreds of thousands and the other has values that are likely below 10. In this setting, the euclidean distance between points will be totally dominated by price, and bedrooms will be basically ignored. Because of this, you should almost certainly scale your features before applying KNN: usually we would do this by dividing every feature by its standard deviation. This creates a distance function where all features contribute equally. Below, we will talk about how this can lead to its own issues. 
+
+There are some pros and cons of KNN that are relevant regardless of the dimension $p$. 
+\begin{itemize}
+	\item \textbf{Con: usability:} we need to choose $k$. This means that KNN cannot be used directly ``out of the box"- we probably want to choose $k$ using cross-validation. 
+	\item \textbf{Pro/Con: bias/variance tradeoff: }
+	\begin{itemize}
+	\item With small $k$, we can approximate functions that are arbitrarily wiggly. So we don't need to worry that our function class $\mathcal{F}$ is not sufficiently flexible. 
+	\item When $k$ is small, each prediction is generated with very few datapoints, which means that we have high variance. 
+	\item When $k$ is large, a prediction might be generated with points that are actually far away from the test point $\xte$, which can introduce bias. 
+	\item If we have enough data points $n$ such that our predictor space is densely populated with training points, we can pick a pretty large $k$ and still have it be the case that every training point in $N_k(x)$ is actually close to $x$. This means that we won't have much bias, but we will also have low variance since $k$ is large.
+	\item For a given problem, we may or may not find a ``sweet-spot" $k$ that makes KNN work really well!
+	\end{itemize}
+	\item \textbf{Pro / Con: efficiency:} 
+	\begin{itemize}
+	\item Computational cost of training is essentially free. Just store the training dataset. 
+	\item At testing, we need to compute distances between the new test point and all points in the training set. This could be slow if you implement it naively, but people have cool algorithms for finding nearest neighbors efficiently. 
+	\end{itemize}
+\end{itemize}
+
+There are some additional cons of KNN that come up when the dimension $p$ is large. 
+\begin{itemize}
+\item \textbf{Impact of irrelevant features:} Suppose that we have $p$ features in our dataset, but only a small subset of these features actually impact the response $Y$. All of these features are used in computing the neighbors of $x$! So, we are letting totally irrelevant features contribute to our distance metric. This could introduce either bias or variance. The bias would be because I am doing a bad job selecting the meaningful neighbors. The variance would be because my prediction can vary based on extra random noise in some random irrelevant feature. 
+\item \textbf{Lack of interpretability:} Unlike linear regression, running KNN on a high dimensional dataset tells you nothing at all about what features are most associated with $Y$. If you wanted to remove irrelevant features to improve performance, KNN provides no built in guidance for doing this. This is in contrast to linear regression. 
+\item \textbf{Computational cost:} Storing the training set is actually quite expensive when $n$ and $p$ are large. So even though ``training the model" just involves ``storing the training set"- this is not free! Neither is computing lots of pairwise distances in high dimensions, or searching through high dimensional space for neighbors! We will need to come up with more clever algorithms for KNN to get around this. 
+\item \textbf{Curse of dimensionality:} It turns out that, in high dimensions, points just become far from one another! So selecting neighbors in high dimensions is just a really hard task! The entire notion of neighbors hardly makes sense anymore, because our high-dimensional feature space will not be densely populated unless $n$ is really large compared to $p$.  So even though we can theoretically do KNN when $p > n$ (unlike for linear regression), it is going to work very poorly in this setting. 
+\end{itemize}
+
+
+\subsection{Comparing linear regression and KNN, without preprocessing}
+
+See the R Demo from class.
+
+We ran out of time before we could talk about what to do about this! We will talk about that next time!
+
+
+
+\subsection{Miscellaneous}
+
+People asked good questions in class, so here are some extra points that I wanted to add! 
+
+\begin{itemize}
+\item Another big advantage of linear regression over KNN is that we have theory that lets us do inference (e.g. prediction intervals!) to rigorously quantify our uncertainty for linear regression. 
+\begin{itemize}
+\item This inference depends on some number of assumptions about the underlying data generating mechanism. For example, the typical inference that we do assumes homoskedasticity (equal variance of our errors), but robust/sandwich standard errors let us relax this assumption (at the possible cost of statistical power). 
+\item We like that KNN requires no assumptions whatsoever: we don't need to believe that our model is truly linear, etc. But a downside of this lack of assumptions is that we don't have many tools available to make prediction intervals! This is a typical tradeoff: we would love to avoid assumptions, but usually avoiding assumptions also means we can't say much about our final answer!
+\item Off the top of my head, I don't know much about inference for KNN. But I included some random thoughts below! 
+\item For KNN with $K=3$, each prediction is based on three datapoints! Without additional assumptions, there is going to be a LOT of uncertainty associated with this prediction. 
+\item Later in the semester, we will talk about conformal inference, which lets us make prediction intervals for any machine learning model. This could be applied to KNN!
+\item To make a prediction interval, we need both an estimate but also a measure  of sampling uncertainty associated with this estimate. Maybe we could use bootstrapping to estimate the SE of a KNN prediction and make an interval based on that? When I googled ``inference for KNN", I found a bunch of suggestions about bootstrapping! It would be interesting to try this out and see if it works! 
+\begin{itemize}
+\item A sketch of the idea: Get $B$ different KNN predictions for a point $\xte$ by using different random bootstrap subsamples of the training dataset each time. Then, compute the standard deviation of these $B$ predictions. Then, get your main prediction $\hat{y}^{test}$ using all of the data. Let $\hat{y}^{test} \pm 2 \hat{SD}(\hat{y}^{test})$ be your prediction interval. Would this cover the true $y^{test}$ 95\% of the time? I am not sure because KNN is strange and bootstrapping does have theory/requirements. Let's try it out in a future R demo during lecture. 
+\end{itemize}
+\end{itemize}
+\item We mentioned that KNN requires storing the entire dataset to make test predictions, and that it is inefficient. This is not strictly speaking true, because people have made smart algorithms for getting around this problem.
+If you google ``KNN with KD tree or Ball tree" you will find a lot of resources on fast algorithms. These are the ones that I learned about in my ML class, but I think a lot of others exist too!
+\item Someone asked if you need to store the entire training dataset to fit a linear regression model. It turns out that you don't! I will put a reading on your HW about ``online learning" for linear regression. The idea is that, instead of storing our training dataset $X,y$ all at once and computing $\hat{\beta} = (X^T X)^{-1} X^T y$, we can instead write $\hat{\beta}$ as:
+$$
+\hat{\beta} = \argmin_b \sum_{i=1}^n (y_i - x^T b)^2
+$$
+and assume that we only have access to a single example $x_i, y_i$ at a time. We have algorithms that can step along the gradient of this loss function according to one example $x_i, y_i$ at a time in order to find the minimum. So the full data never needs to be stored! 
+\item I'm sure there are things I forgot. Keep asking good questions!
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
