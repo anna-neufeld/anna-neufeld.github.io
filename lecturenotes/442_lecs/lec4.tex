@@ -257,31 +257,144 @@ In general, even if Ridge and Lasso got smushed into one lecture in this class, 
 
 \section{Thursday, 2/20: Wrap up regularization, introduction to classification}
 
-\subsection{Wrap up from last time}
+\subsection{Recap from last time on Regularization}
 
-...
+If we have $n$ training datapoints $(x_1, y_1), \ldots, (x_n, y_n)$, then ordinary least squares solves the following objective function on the training set:
+\begin{equation}
+\label{ols}
+\hat{\beta}_{OLS} = \argmin_{b \in \mathbb{R}^p} \sum_{i=1}^n 	(y_i - b^T x_i)^2
+\end{equation}
+When our true model is linear, this is unbiased for the ``true $\beta$". But, it can have high variance, especially if the number of predictors $p$ is large and many of those predictors are irrelevant. 
+
+Last class, we mentioned three regularization methods. The point of all three is to reduce the variance of \eqref{ols}, but all three do this at the expense of possibly introducing bias. The three methods were:
+
+\begin{itemize}
+\item \textbf{Best subset:} 
+\begin{equation}
+\label{subset}
+\hat{\beta}_{subset,\lambda} = \argmin_{b \in \mathbb{R}^p} \sum_{i=1}^n 	(y_i - b^T x_i)^2 + \lambda ||b||_0
+\end{equation}
+\item \textbf{Ridge: }
+\begin{equation}
+\label{ridge}
+\hat{\beta}_{ridge,\lambda} = \argmin_{b \in \mathbb{R}^p} \sum_{i=1}^n 	(y_i - b^T x_i)^2 + \lambda ||b||_2^2
+\end{equation}
+\item \textbf{Lasso: }	
+\begin{equation}
+\label{lasso}
+\hat{\beta}_{lasso,\lambda} = \argmin_{b \in \mathbb{R}^p} \sum_{i=1}^n 	(y_i - b^T x_i)^2 + \lambda ||b||_1
+\end{equation}
+\end{itemize}
+
+We didn't finish the lecture notes from last class, so we will start by going through those! But there are also a few points that I want to add. 
+
+\subsubsection{Connection between a penalty and a ``budget"}
+
+To understand Figure~\ref{fig_lassoridge}, I think it is important to know \eqref{subset}, \eqref{ridge},  and \eqref{lasso} can all be written as constrained optimization problems. See page 243 of ISL for more info. 
+
+Let's focus on Lasso for simplicity. It turns out that \eqref{lasso} is equivalent to:
+$$
+\hat{\beta}_{lasso,\lambda}  = \argmin_{b \in \mathbb{R}^p} \sum_{i=1}^n 	(y_i - b^T x_i)^2 \ \ \ \ \ \ \ \text{        subject to:     } ||b||_1 < s_\lambda. 
+$$
+This just says to solve the least squares problem, but subject to the constraint that $||b||_1 < s$ for some budget $s$. It turns out that every $\lambda$ you could use for Lasso has a corresponding $s$ that gives you the same solution. Sometimes this formulation can be useful, because there are smart people who know a lot about constrained optimization! 
+
+
+\subsubsection{Modern comparisons!}
+
+This paper was published in 2020, which is crazy recent for something about such fundamental topics:
+\url{https://www.jstor.org/stable/pdf/26997932.pdf}. 
+
+The big idea is that recent computational advances have actually made best-subset regression more doable! So ... should we just do best-subset? Is it the gold-standard over lasso? Apparently not! Best subset and lasso can each outperform eachother in certain settings, and the overall winner is actually the ``relaxed lasso". I recommend you read the paper! 
+
+\subsubsection{R demo}
+
+I want to spend a bunch of time going over an R demo. See the link on GLOW! 
+
+
+\subsection{A quick aside about degrees of freedom}
+
+We have been talking about how the bias/variance tradeoff is a function of model complexity. I have been calling this ``how wiggly a function is"- or how capable the model is of overfitting to the training set. 
+
+One way to formally measure the complexity of a mode is the \emph{degrees of freedom}. I am sure that you have all heard of degrees of freedom before, but I am not sure that you have ever seen it defined formally. As far as I can tell, ISL avoids defining this formally: they just talk about it being the effective number of parameters in a model. 
+
+I feel like we should mention the official definition at least once. Assume that $x_1,\ldots,x_n$ are fixed. Let $g(y) = \hat{y}$, where $g$ is a "model fitting procedure", that takes in the observed values of $y$ as input and trains a prediction model and returns the training set predictions. We are not writing this as $\hat{f}$ because it does not refer to a specific fitted model: it refers to the procedure. And we are not writing it as a function of $X$ because the $X$s are just hiding in the background since they are not random. According to this paper, \url{https://www.stat.berkeley.edu/~ryantibs/papers/sdf.pdf}, 
+$$
+df(g) = \frac{1}{\sigma^2} \sum_{i=1}^n Cov(Y_i, g(Y)_i),
+$$
+where $\sigma$ is $Var(Y_i)$, which is assumed to be constant across $i$. 
+
+Calculating degrees of freedom is really straightforward for simple procedures like linear regression. For more complicated procedures, actually computing this is really complicated! So we might need to estimate or approximate some degrees of freedom. 
+
+I don't think we are going to spend too much more time on this. ISL says it is ``outside the scope of the book". But I think we should mention DF or approximate DF for some models we have seen so far. 
+\begin{itemize}
+\item Linear regression with $p$ coefficients: $p$ degrees of freedom. 
+\item KNN: we are making around $n/k$ unique predictions, so we have around $n/k$ degrees of freedom. In fact, $n/k$ is an unbiased estimator for the degrees of freedom apparently. But the true DF depends on the distribution of the $X$s: how many of your ``regions" overlap affects the number of effective parameters. 
+\item Ridge: You can prove directly from the definition that ridge regression with $p$ coefficients has $< p$ degrees of freedom, and the DF shrinks as $\lambda$ grows. This is because the penalty makes it strictly less wiggly than unpenalized regression on all $p$ predictors. 
+\item Lasso: If you apply Lasso with $p$ predictors but end up with $p_0$ predictors, it turns out that $p_0$ is an unbiased estimate for the degrees of freedom of Lasso! This is magic! We are considering many more than $p_0$ possible models, which would make you think it is bigger than $p_0$. But, we are also ending up with a $p_0$-dimensional linear regression model and applying shrinkage to this model, which would make you think it is smaller than $p_0$. These two factors apparently average out to $p_0$! 
+\item Stepwise regression or subset regression: If you start with $p$ predictors but end up with $p_0$ predictors in the final model, your DF should be larger than $p_0$. Because, even though your final model uses $p_0$, you also gave yourself a bunch of options for models to try out, which allows for a bit more potential for overfitting compared to just lm on a fixed set of $p_0$ predictors. 
+\end{itemize}
+
+Ridge and Lasso are both LESS WIGGLY than linear regression. Next week, we will see some models that are MORE WIGGLY than linear regression, such as splines or GAMS. And ``how wiggly is a model" is something that we could formalize and compute if we really wanted to. 
 
 \subsection{What is classification}
 
-We are switching gears! We assume that we still have a setup with $n$ observations, $p$ predictors in $X$, and one response variable $y$. But now we assume that $y$ is a categorical variable! 
+If we rush through this material in class, I recommend that you go revisit Chapter 2 of ISL. It introduces the basics of classification at the same time as the basics of regression. After reviewing this, we will move onto Chapter 4, which discusses methods for classification.
+
+We are switching gears! We assume that we still have a setup with $n$ observations, $p$ predictors in $X$, and one response variable $y$. But now $y$ is a categorical variable that can take on one of $G$ possible values\footnote{A lot of people use $K$ for number of classes. I think this is sort of horrible, because we also have $KNN$ and $K$-fold cross-validation. We need a new letter!}
 
 We still believe that there is some \emph{true} data generating process that generates $y$ from $X$, with some noise. However, it may not make sense anymore to write $y = f(X) + \epsilon$. Because, if $y$ is a category, what form does the noise $\epsilon$ take on?
 
 To study this \emph{classification} problem, we need some new language! 
 
-Let's start where the simplest case where there are only two possible categories for $y$, and for simplicity, let's encode them as $0$ and $1$. If we think that $y_i$ is related to $x_i$, but that there is also some random noise in $y_i$, then the reasonable thing to do is to model: 
+We assume that $y$ can take on values $g_1,\ldots, G_g$. And that there is some true distribution where
 $$
-Y_i \mid X_i \sim \mathrm{Bernoulli}\left( f(X_i) \right). 
+Pr(Y=g_k \mid X) = p(X). 
 $$
-The idea once again is that $f()$ is some true, unknown function. We really want to estimate $f()$: either just because we want to make good predictions in the future, or because we want to understand and interpret which predictors $X$ are most contributing to $Pr(Y_i=1)$. 
+In the special case that $Y$ is binary (there are only two classes), then  it must be the case that:
+$$
+Y \mid X \sim \mathrm{Bernoulli}(f(X)), 
+$$
+and so we just need to model the probabilities $\theta$.  This is an easier case, so we will focus on this a lot. In the case where we have multiple categories, we just replace $\mathrm{Bernoulli}$ with $\mathrm{Multinomial}$: we are still going to model probabilities of belonging to certain classes. 
+
+But in either case, our goal is to make predictions $\hat{Y}$ using the predictors $X$! And we want our predictions to work well for unseen data. And we do not know the true function $f()$, so we need to estimate it. 
+
+It is going to turn out that a lot of things are the same as what we discussed in the regression case!
+\begin{itemize}
+\item We are still going to have a bias-variance tradeoff! We want to use models that are medium-wiggy, so that they can capture structure in the data but so that they cannot just memorize the training set. 
+\item This means that we can't just rely on training set error to measure how good a model is! We need test error, or cross validation. 
+\item We can still use KNN! I am sure you can all figure out how it works: we predict $\hat{Y}(x)$ to be the majority class out of the K nearest neighbors in the training set of $x$. And we still have the curse of dimensionality!	
+\end{itemize}
+
+\subsubsection{What is our new goal, and what is the ideal model?}
+
+Instead of squared error loss, we will use 0/1 loss. We let: 
+$$
+L(Y, \hat{f}(X)) = \begin{cases}
+ 0 & \text { if } Y = \hat{Y}(X) \\
+ 1 & \text{ if } Y \neq \hat{Y}(X)	
+ \end{cases}. 
+$$
+We want to minimize the expected value of this 0/1 loss over possible new datapoints that we might see. Using the law of total expectation twice, if the possible values of $Y$ are $\{g_1, \ldots, g_G\}$, this means minimizing: 
+\begin{align*}
+E_{X,Y} \left[ L(Y, \hat{Y}(X)) \right] &= E_{X} \left[ E_{Y \mid X} \left[ L(Y, \hat{Y}(X)) \mid X \right] \right] \\
+&= E_X \left [ \sum_{k=1}^G E_{Y \mid X }\left[ L(Y, \hat{Y}(X)) \mid Y = g_k, X\right] Pr(Y=g_k \mid X) \right] \\
+&= E_X \left [ \sum_{k=1}^G 1\{ \hat{Y}(X) \not= g_k \} Pr(Y=g_k \mid X) \right] \\
+%&= \sum_{k=1}^G E_{X,Y}[ L(Y, \hat{f}(X)) \mid Y = g_k] Pr(Y=g_k).
+\end{align*}
+Think about the sum over the $G$ categories. This sum will always have one term that is $0$, and the rest of the $G-1$ terms will have value $Pr(Y=g_k \mid X)$. 
 
 
-%\begin{itemize}
-%\item What is classification? How do we evaluate a classifier?
-%\item The Bayes classifier
-%\item Review of logistic regression.
-%\item The ROC curve. 
-%\end{itemize}
+
+We call this the \textbf{Bayes classifier}. Be sure to think about how well KNN would or would not approximate this ideal Bayes classifier for a given problem. 
+
+
+
+
+\subsubsection{Review of logistic regression}
+
+You have all seen logistic regression before! But let's quickly review it as one possible way to do binary classification! 
+
+
 
 
 
