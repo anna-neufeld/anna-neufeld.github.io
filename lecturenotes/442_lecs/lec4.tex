@@ -231,7 +231,7 @@ Note that, if you are using Lasso for variable selection, you might want to hand
 \begin{figure}
 \centering
 	\includegraphics[width=0.7\textwidth]{442_lecs/magicpic.png}
-	\caption{A figure taken from ISL that illustrates why the Lasso prefers sparse solutions while Ridge does not. If we are optimizing the least squares objective (oval) subject to the constraint that either the L1 or L2 norm of $\beta$ is not too large, the our solution will lie in the place where the contours of our least squares objective first hit our constraint set. For the L2 constraint (circle), this can happen anywhere. For the L1 solution (diamond), this is more likely to happen on one of our 4 pointy corners.}
+	\caption{A figure taken from ISL that illustrates why the Lasso prefers sparse solutions while Ridge does not. If we are optimizing the least squares objective (oval) subject to the constraint that either the L1 or L2 norm of $\beta$ is not too large, the our solution will lie in the place where the contours of our least squares objective first hit our constraint set. For the L2 constraint (circle), this can happen anywhere. For the L1 solution (diamond), this is more likely to happen on one of our 4 pointy corners. For more intuition on why, you should see the .Rmd document that I posted on GLOW, which will let you draw this picture for yourself for a particular dataset.}
 	\label{fig_lassoridge}
 \end{figure}
 
@@ -251,6 +251,6 @@ In general, what does regularization get us, and what are the risks?
 
 \subsection{Wrap up}
 
-I am sure I forgot some key points and I am sure we will be rushed! We will do our Lasso/Ridge R demo next class, and use that as a way to revisit some points! \\
+This was a whirlwind intro to regularization, ridge, and lasso, which are REALLY important topics. We will do some R demos next class. We will also discuss Figure~\ref{fig_lassoridge} next class: we really have not yet done it justice.\\
 \\
-In general, even if Ridge and Lasso got smushed into one lecture in this class, I hope that you will remember them forever! They are really fundamental concepts! We have ridge/lasso logistic regression too- it's not only a linear regression thing! It's a really beautiful example of the bias-variance tradeoff and the interplay between optimization and statistics!
+In general, even if Ridge and Lasso feel rushed in this class, I hope that you will remember them forever! They are really fundamental concepts! We have ridge/lasso logistic regression too- it's not only a linear regression thing! It's a really beautiful example of the bias-variance tradeoff and the interplay between optimization and statistics!

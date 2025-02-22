@@ -1,0 +1,133 @@
+\section{Monday, 2/24: Introduction to classification}
+
+If we rush through this material in class, I recommend that you go revisit Chapter 2 of ISL. It introduces the basics of classification at the same time as the basics of regression. After reviewing this, we will move onto Chapter 4, which discusses methods for classification.
+
+\subsection{What is classification}
+
+We are switching gears! We assume that we still have a setup with $n$ observations, $p$ predictors in $X$, and one response variable $y$. But now $y$ is a categorical variable that can take on one of $G$ possible values\footnote{A lot of people use $K$ for number of classes. I think this is sort of horrible, because we also have $KNN$ and $K$-fold cross-validation. We need a new letter!}
+
+We still believe that there is some \emph{true} data generating process that generates $y$ from $X$, with some noise. However, it may not make sense anymore to write $y = f(X) + \epsilon$. Because, if $y$ is a category, what form does the noise $\epsilon$ take on? Instead, we assume that $y$ can take on values $g_1,\ldots, g_G$. And that there is some true but known distribution for $Pr(Y=g_k \mid X)$ that we want to model. 
+
+In the special case that $Y$ is binary (there are only two classes), then it must be the case that:
+$$
+Y \mid X \sim \mathrm{Bernoulli}(f(X)), 
+$$
+and so we just need to model $f(X)$. This is an easier case, so we will focus on this a lot. In the case where we have multiple categories, we just replace $\mathrm{Bernoulli}$ with $\mathrm{Multinomial}$: we are still going to model probabilities of belonging to certain classes. 
+
+But in either case, our goal is to make predictions $\hat{Y}$ using the predictors $X$! And we want our predictions to work well for unseen data. And we do not know the true function $f()$, so we need to estimate it. 
+
+It is going to turn out that a lot of things are the same as what we discussed in the regression case! For example, the following aspects will all still be important when we evaluate models:
+\begin{itemize}
+\item Bias, which will improve when models are more complex. 
+\item Variance, which will get worse when models are more complex.
+\item Interpretability, which often gets worse when models are more complex, 
+\item Computational efficiency
+\item How easy would it be for a non-expert to use it? 
+\end{itemize}
+
+\subsection{What is our new goal, and what is the ideal model?}
+
+Instead of squared error loss, we will use 0/1 loss. We let: 
+$$
+L(Y, \hat{f}(X)) = \begin{cases}
+ 0 & \text { if } Y = \hat{Y}(X) \\
+ 1 & \text{ if } Y \neq \hat{Y}(X)	
+ \end{cases}. 
+$$
+We want to minimize the expected value of this 0/1 loss over possible new datapoints that we might see. Using the law of total expectation twice, if the possible values of $Y$ are $\{g_1, \ldots, g_G\}$, this means minimizing: 
+\begin{align*}
+E_{X,Y} \left[ L(Y, \hat{Y}(X)) \right] &= E_{X} \left[ E_{Y \mid X} \left[ L(Y, \hat{Y}(X)) \mid X \right] \right] \\
+&= E_X \left [ \sum_{k=1}^G L(Y, \hat{Y}(X)) Pr(Y=g_k \mid X) \right] \\
+&= E_X \left [ \sum_{k=1}^G 1\{ \hat{Y}(X) \not= g_k \} Pr(Y=g_k \mid X) \right] 
+\end{align*}
+Think about the sum over the $G$ categories. This sum will always have one term that is $0$, and the rest of the $G-1$ terms will have value $Pr(Y=g_k \mid X)$. To minimize this quantity, we should always let $\hat{Y}(X)$ be the category $g_k$ that maximizes $Pr(Y=g_k \mid X)$. That way, we are zero-ing out the largest of the $G$ terms $Pr(Y=g_k \mid X)$ in our sum, and are thus making the sum as small as possible. 
+
+So, for regression, the very best possible predictor $\hat{Y}$ if we knew the data generating mechanism was to let $\hat{Y}(x) = E[Y \mid X=x]$. For classification, the very best possible prediction $\hat{Y}$ if we knew the data generating mechanism is to let 
+$$
+\hat{Y}(x) = \argmax_{k \in 1,\ldots, G } Pr\left( Y = g_k \mid X=x \right). 
+$$ 
+This is called the \textbf{Bayes classifier}. The error rate of this classifier is called the \textbf{Bayes error rate}. The Bayes error rate is like the irreducible error that we had before for linear regression, where the irreducible error was $Var(\epsilon)$ and it related to variation in $Y$ that could not be explained by $X$. The Bayes error rate is the same: no matter how good our statistical learning model is, we can never beat the Bayes error rate, and we can never beat the model that knows $Pr\left( Y = g_k \mid X=x \right)$ and always predicts the $Y$ that maximizes this probability. 
+
+Instead, we will think about methods that try to approximate the Bayes classifier using various techniques! Today we will cover three: KNN, logistic regression, and LDA. 
+
+\subsection{KNN classification}
+
+For a test point $\xte$, we find the $k$ nearest neighbors in the training set. We let our prediction for $\xte$ be the majority class of these neighbors. The majority class among the K-nearest neighbors is a direct estimate of $\argmax_{k \in 1,\ldots, G } Pr\left( Y = g_k \mid X=\xte \right)$, if we assume that $Pr\left( Y = g_k \mid X=\xte \right)$ is well-approximated by \\ $Pr\left( Y = g_k \mid X \text{ is a neighbor of } \xte \right)$. 
+
+This makes very few assumptions on the function form of 
+$Pr\left( Y = g_k \mid X=x \right)$: it only assumes that neighbors are similar. But we will have a curse of dimensionality problem again. And a bias/variance tradeoff as we change $k$. The story is basically the same as it was for regression!
+
+\subsection{Logistic regression}
+
+Suppose for now that there are only two classes! So $Y$ can take on values $0$ or $1$. The notion of the Bayes classifier tells us that we should try to model $Pr(Y=1 \mid X=x)$. Since we are doing binary classification, this is all we need: we will predict $\hat{Y}=1$ if our estimated probability is greater than 0.5, and we will predict $\hat{Y}=0$ otherwise. 
+
+
+If we would like to fit a parametric model for $Pr(Y=1 \mid X=x)$, a simple first idea would be to assume that
+$$
+Pr(Y=1 \mid X=x) = \beta^T X.
+$$
+We could estimate this with linear regression! But the issue is that we will end up getting predicted probabilities outside of $0$ and $1$.
+
+The solution, which you have all seen before, is to use a \emph{link function}. The link function will let us use the basic idea of a linear model, but constrain our predictions to be between $0$ and $1$ so that they can be interpreted as probabilities. This is logistic regression: confusingly named, because it is a classification method, but it also has deep ties to linear regression and other generalized linear models. We assume that:
+$$
+Pr(Y=1 \mid X=x) = \frac{e^{\beta^T X}}{1 + e^{\beta^T x}}.
+$$
+To solve this, we find the vector $\hat{\beta}$ that minimizes the negative log likelihood of the training data. 
+
+\begin{itemize}
+\item This model ends up being pretty interpretable (recall from Stat 346 that we can interpret our coefficients on a log-odds scale).
+\item Furthermore, if our model assumption holds (the log-odds truly are linear in the Xs), then theorems from Stat 360 tell us that the maximum likelihood estimator is asymptotically unbiased and achieves the asymptotically smallest possible variance among all unbiased estimators. This is just like our BLUE fact for linear models. Basically, logistic regression should perform well if our assumptions are met. 
+\item However, if we have a ton of predictors $p$, then our variance can be quite high, and we might actually do better with a biased estimate. Since this optimization problem fits the general framework of looking for a $\hat{\beta}$ that minimizes a training  dataset \emph{loss function}, we can reduce our variance with by adding a ridge or lasso penalty to our loss function! And everything will work like it did for linear models! We still use cv.glmnet! We can make our model less wiggly with regularization. 
+\item It is also still true that we could have bias if our log odds are not truly linear. So we could add polynomial terms or something to make our model more wiggly. 
+\end{itemize}
+
+\subsection{LDA: discussion lead by Alessa!}
+
+The Bayes classifier tells us that we should model $Pr(Y=g_k \mid X)$. Logistic regression tried to model this directly. But, what if we first apply Bayes rule to note that:
+$$
+Pr(Y=g_k \mid X) \propto Pr(X \mid Y=g_k) pr(Y=g_k). 
+$$
+This is an interesting idea! If we imagine that our predictors $X$ are \emph{generated} from one distribution when $Y=1$ and another distribution when $Y=0$, then using this formulation to model the distribution of $X$ separately for the two classes kind of makes sense!
+
+LDA, or linear discriminant analysis, decides that we should model $Pr(X \mid Y=g_k) pr(Y=g_k)$ directly. It does this under the assumption that 
+$$
+Pr(X \mid Y=g_k)  \sim N_p \left(\bold{\mu}_k, \Sigma\right),
+$$
+where the mean vectors $\bold{\mu}_k$ for each class and the common covariance matrix $\Sigma$ are unknown and must be estimated from the training data. LDA estimates these parameters, and then assigns $\hat{Y}(X)$ to be the class that maximizes $\widehat{Pr}(X \mid Y=g_k)\widehat{Pr}(Y=g_k)$. 
+
+Why would a method like this be called ``linear" discriminant analysis? 
+
+Well, under the assumption of multivariate normality, the \emph{decision boundary} between predicting $\hat{Y}(X) = g_1$ and $\hat{Y}(X) = g_2$ is the set of points where  $\widehat{Pr}(X \mid Y=g_1)\widehat{Pr}(Y=g_1)=\widehat{Pr}(X \mid Y=g_2)\widehat{Pr}(Y=g_2)$. Let's solve for this decision boundary under this normality assumption. 
+
+Let $\hat{\mu}_1$ be our estimated mean for class $g_1$. Let $\hat{mu}_2$ be our estimated mean for class $g_2$. Let $\hat{\Sigma}$ be our shared estimated covariance. Let $\hat{\pi}_1$ and $\hat{\pi}_2$ denote the estimated probabilities of falling in class 1 or class 2. These do not depend on $X$. 
+
+ Let's solve for $x$ such that:
+$$
+(2\pi)^{-k/2}|\hat{\Sigma}|^{-1/2} \exp\left( -\frac{1}{2} (x - \hat{\mu}_1)^T  \hat{\Sigma}^{-1}(x - \hat{\mu}_1)\right) \hat{\pi}_1= (2\pi)^{-k/2}|\hat{\Sigma}|^{-1/2} \exp\left( -\frac{1}{2} (x - \hat{\mu}_2)^T  \hat{\Sigma}^{-1}(x - \hat{\mu}_2)\right) \hat{\pi}_2
+$$ 
+This means solving for $x$ such that 
+$$
+-\frac{1}{2} (x - \hat{\mu}_1)^T  \hat{\Sigma}^{-1}(x - \hat{\mu}_1) + log(\hat{\pi}_1)= -\frac{1}{2} (x - \hat{\mu}_2)^T  \hat{\Sigma}^{-1}(x - \hat{\mu}_2) +  log(\hat{\pi}_2).
+$$ 
+Simplifying further,
+$$
+- x^T \hat{\Sigma}^{-1} (\hat{\mu}_1+\hat{\mu}_2) + \frac{1}{2} \hat{\mu}_1 ^T \hat{\Sigma}^{-1} \hat{\mu}_1 + \log(\frac{\hat{\pi}_1}{\hat{\pi}_2}) =   \frac{1}{2} \hat{\mu}_2 ^T \hat{\Sigma}^{-1} \hat{\mu}_2. 
+$$ 
+Note that this is a linear function of the vector $x$: the quadratic terms cancelled out. This tells is that the boundary between the regions where we predict class 1 and the region where we predict class 2 is a straight line or a plane in X-space. So, LDA tries to draw straight lines or planes in X-space to separate classes. It turns out that this will work well if the classes are truly linearly separable, and will not work well otherwise.
+
+I am sure that Alessa will tell us more about the pros and cons of LDA and how it compares to other methods.  These are just initial notes. I bet you can already start making some guesses about bias, variance, interpretability, etc. 
+
+On your own time, convince yourself that if you drop the assumption that $\Sigma$ is shared across classes, you find that the decision boundary is quadratic! This is QDA instead of LDA! 
+
+
+
+\subsection{Asymmetric Loss and ROC Curves}
+
+The premise of today's class was that we want to minimize the expected 0/1 loss. But you all know that, in real life, sometimes false positives are more severe than false negatives, or vis versa. 
+
+In such a setting, we might not want to pick the classifier that minimizes the expected 0/1 loss. We might want to pick the classifier that minimizes the false positive rate while maintaining a reasonable false negative rate, or something like that!
+
+This leads us to the notion of an ROC curve, which you will see on your homework 3! 
+
+
+

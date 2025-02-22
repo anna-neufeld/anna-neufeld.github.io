@@ -1,4 +1,6 @@
-\section{Thursday, 2/20: Wrap up regularization, introduction to classification}
+\section{Thursday, 2/20: More on regularization}
+
+We did not end up getting to classification at all! Because there is a LOT to say about Ridge and Lasso, so we spent a lot of time on them! 
 
 \subsection{Recap from last time on Regularization}
 
@@ -29,40 +31,47 @@ Last class, we mentioned three regularization methods. The point of all three is
 \end{equation}
 \end{itemize}
 
-We didn't finish the lecture notes from last class, so we will start by going through those! But there are also a few points that I want to add. 
-
-\subsubsection{Connection between a penalty and a ``budget"}
-
-To understand Figure~\ref{fig_lassoridge}, I think it is important to know \eqref{subset}, \eqref{ridge},  and \eqref{lasso} can all be written as constrained optimization problems. See page 243 of ISL for more info. 
-
-Let's focus on Lasso for simplicity. It turns out that \eqref{lasso} is equivalent to:
-$$
-\hat{\beta}_{lasso,\lambda}  = \argmin_{b \in \mathbb{R}^p} \sum_{i=1}^n 	(y_i - b^T x_i)^2 \ \ \ \ \ \ \ \text{        subject to:     } ||b||_1 < s_\lambda. 
-$$
-This just says to solve the least squares problem, but subject to the constraint that $||b||_1 < s$ for some budget $s$. It turns out that every $\lambda$ you could use for Lasso has a corresponding $s$ that gives you the same solution. Sometimes this formulation can be useful, because there are smart people who know a lot about constrained optimization! 
-
-Some very important overall pros and cons: 
+Ff we had to summarize an overall comparison of pros and cons very quickly, I think we would want to say:
 \begin{itemize}
 \item Best subset regression is interpretable! And, if we select the ``true" subset of important variables, we have unbiased coefficients for the ``true" non-zero elements of $\beta$! Unfortunately, it is really computationally expensive!
 \item Ridge regression has a closed form solution so it is really efficient! But it doesn't lead to an interpretable, low-dimensional model. It just reduces variance.
-\item Lasso regression is interpretable and can be solved more efficiently than best subset! We do still shrink the non-zero coefficients, so even if we select the ``true" subset of important variables, we will have bias!
+\item Lasso regression is interpretable and can be solved more efficiently than best subset! We do still shrink the non-zero coefficients, so even if we select the ``true" subset of important variables, we will have bias in the coefficients. 
 \end{itemize}
 
+We visualized the bias and variance of Ridge and Lasso as a function of $\lambda$ in an R demo that is posted on GLOW. We compared to linear model and stepwise regression. We went through the document kind of fast, but there is a lot of good stuff in the document: please read and make sure you understand!
+
+There are a few more things that we need to discuss.
+\begin{itemize}
+\item What the heck is going on in Figure~\ref{fig_lassoridge}? More specifically, what is the connection between regularization and constrained optimization?
+\item Can we say precisely whether best subset or ridge or lasso is more or less wiggly?	
+\end{itemize}
+These are covered below. 
+
+\subsection{Connection between regularization and constrained optimization}
+
+To understand Figure~\ref{fig_lassoridge}, it is important to know \eqref{subset}, \eqref{ridge},  and \eqref{lasso} can all be written as constrained optimization problems. This is discussed on Page 243 of ISL.
+
+Let's focus on Lasso for simplicity. It turns out that \eqref{lasso} is equivalent to:
+$$
+\hat{\beta}_{lasso,\lambda}  = \argmin_{b \in \mathbb{R}^p} \sum_{i=1}^n 	(y_i - b^T x_i)^2 \ \ \ \ \ \ \ \text{        subject to:     } ||b||_1 < s. 
+$$
+For some $s$, which depends on $\lambda$ and also the values of $x_1,\ldots, x_n$ and $y_1,\ldots,y_n$. 
+
+This tells us that our original idea of penalized regression is equivalent to a constrained optimization problem: the problem of solving the least squares problem, but subject to the constraint that $||b||_1 < s$ for some budget $s$. This formulation is useful because there are smart people who know a lot about constrained optimization!
+
+In class, people asked really good questions about WHY we can write a loss+penalty problem as a constrained optimization problem, and also about the connection between $s$ and $\lambda$. This has to do with the theory of the Lagrangian and Lagrange multipliers for constrained optimization! I put a document on GLOW with a lot of notes about this. Please take a look!
+
+How does this idea relate to Figure~\ref{fig_lassoridge}?
+\begin{itemize}
+\item Figure~\ref{fig_lassoridge} draws the contours of the least squares objective function for a given dataset. The minimum of the least squares objective function is the OLS solution, which is marked as $\hat{\beta}$ in the figure. The contours are drawn as a function of $b_1$ and $b_2$, which we are optimizing over. 
+\item Since we can see ridge and lasso as solving this objective subject to a budget constraint, the diamond and the circle draw the Lasso and Ridge budget constraints for a particular $s$. 
+\item The theory of Lagrange multipliers and constrained optimization tells us that our constrained solution occurs where the contours of the OLS function are tangent to the constraint set. This I think you should be able to understand. 
+\item It turns out that, because the lasso constraint is "pointy", solutions are more likely to occur on the axis: i.e. at sparse solutions where one element of $\beta$ is exactly $0$. This I do not think we really have quite enough theory to understand: we would need to study convex optimization and the KKT conditions and such. But I hope the picture gives you a little bit of intuition!
+\end{itemize}
+The .Rmd document that I posted on GLOW gives you code to actually make Figure 1 for any dataset that you generate, and plot the Ridge and Lasso solutions. I hope that you will play around with this code until you understand what is being plotted, and believe me that Lasso tends to give sparse solutions! 
 
 
-\subsubsection{Modern comparisons!}
-
-This paper was published in 2020, which is crazy recent for something about such fundamental topics:
-\url{https://www.jstor.org/stable/pdf/26997932.pdf}. 
-
-The big idea is that recent computational advances have actually made best-subset regression more doable! So ... should we just do best-subset? Is it the gold-standard over lasso? Apparently not! Best subset and lasso can each outperform each-other in certain settings, and the overall winner is actually the ``relaxed lasso". I recommend you read the paper!
-
-\subsubsection{R demo}
-
-I want to spend a bunch of time going over an R demo. See the link on GLOW! 
-
-
-\subsection{A quick aside about degrees of freedom}
+\subsection{A quick aside about degrees of freedom: we skipped this in class, but it is important.}
 
 We have been talking about how the bias/variance tradeoff is a function of model complexity. I have been calling this ``how wiggly a function is"- or how capable the model is of overfitting to the training set. 
 
@@ -87,85 +96,40 @@ I don't think we are going to spend too much more time on this. ISL says it is `
 
 TLDR: Ridge and Lasso are both LESS WIGGLY than linear regression. Next week, we will see some models that are MORE WIGGLY than linear regression, such as splines or GAMS. 
 
-\subsection{What is classification}
+\subsection{Other}
 
-If we rush through this material in class, I recommend that you go revisit Chapter 2 of ISL. It introduces the basics of classification at the same time as the basics of regression. After reviewing this, we will move onto Chapter 4, which discusses methods for classification.
+Some random thoughts and notes. 
 
-We are switching gears! We assume that we still have a setup with $n$ observations, $p$ predictors in $X$, and one response variable $y$. But now $y$ is a categorical variable that can take on one of $G$ possible values\footnote{A lot of people use $K$ for number of classes. I think this is sort of horrible, because we also have $KNN$ and $K$-fold cross-validation. We need a new letter!}
+\subsubsection{Modern comparison!}
 
-We still believe that there is some \emph{true} data generating process that generates $y$ from $X$, with some noise. However, it may not make sense anymore to write $y = f(X) + \epsilon$. Because, if $y$ is a category, what form does the noise $\epsilon$ take on? Instead, we assume that $y$ can take on values $g_1,\ldots, G_g$. And that there is some true distribution where
-$$
-Pr(Y=g_k \mid X) = p(X). 
-$$
-In the special case that $Y$ is binary (there are only two classes), then  it must be the case that:
-$$
-Y \mid X \sim \mathrm{Bernoulli}(f(X)), 
-$$
-and so we just need to model the probabilities $\theta$.  This is an easier case, so we will focus on this a lot. In the case where we have multiple categories, we just replace $\mathrm{Bernoulli}$ with $\mathrm{Multinomial}$: we are still going to model probabilities of belonging to certain classes. 
+This paper was published in 2020, which is crazy recent for something about such fundamental topics:
+\url{https://www.jstor.org/stable/pdf/26997932.pdf}. 
 
-But in either case, our goal is to make predictions $\hat{Y}$ using the predictors $X$! And we want our predictions to work well for unseen data. And we do not know the true function $f()$, so we need to estimate it. 
+The big idea is that recent computational advances have actually made best-subset regression more doable! So ... should we just do best-subset? Is it the gold-standard over lasso? Apparently not! Best subset and lasso can each outperform each-other in certain settings, and the overall winner is actually the ``relaxed lasso". I recommend you read the paper!
 
-It is going to turn out that a lot of things are the same as what we discussed in the regression case!
-\begin{itemize}
-\item We are still going to have a bias-variance tradeoff! We want to use models that are medium-wiggy, so that they can capture structure in the data but so that they cannot just memorize the training set. 
-\item This means that we can't just rely on training set error to measure how good a model is! We need test error, or cross validation. 
-\item We can still use KNN! I am sure you can all figure out how it works: we predict $\hat{Y}(x)$ to be the majority class out of the K nearest neighbors in the training set of $x$. And we still have the curse of dimensionality!	
-\end{itemize}
+\subsubsection{Using the lasso for variable selection in practice, and inference after lasso}
 
-\subsubsection{What is our new goal, and what is the ideal model?}
+I was not planning to cover this in class, but then people asked a lot of questions related to it!
 
-Instead of squared error loss, we will use 0/1 loss. We let: 
-$$
-L(Y, \hat{f}(X)) = \begin{cases}
- 0 & \text { if } Y = \hat{Y}(X) \\
- 1 & \text{ if } Y \neq \hat{Y}(X)	
- \end{cases}. 
-$$
-We want to minimize the expected value of this 0/1 loss over possible new datapoints that we might see. Using the law of total expectation twice, if the possible values of $Y$ are $\{g_1, \ldots, g_G\}$, this means minimizing: 
-\begin{align*}
-E_{X,Y} \left[ L(Y, \hat{Y}(X)) \right] &= E_{X} \left[ E_{Y \mid X} \left[ L(Y, \hat{Y}(X)) \mid X \right] \right] \\
-&= E_X \left [ \sum_{k=1}^G L(Y, \hat{Y}(X)) Pr(Y=g_k \mid X) \right] \\
-&= E_X \left [ \sum_{k=1}^G 1\{ \hat{Y}(X) \not= g_k \} Pr(Y=g_k \mid X) \right] 
-\end{align*}
-Think about the sum over the $G$ categories. This sum will always have one term that is $0$, and the rest of the $G-1$ terms will have value $Pr(Y=g_k \mid X)$. To minimize this quantity, we should always let $\hat{Y}(X)$ be the category $g_k$ that maximizes $Pr(Y=g_k \mid X)$. That way, we are zero-ing out the largest of the $G$ terms $Pr(Y=g_k \mid X)$ in our sum, and are thus making the sum as small as possible. 
+Suppose that you are using lasso for variable selection. 
 
-So, for regression, the very best possible predictor $\hat{Y}$ if we knew the data generating mechanism was to let $\hat{Y}(x) = E[Y \mid X=x]$. For classification, the very best possible prediction $\hat{Y}$ if we knew the data generating mechanism is to let 
-$$
-\hat{Y}(x) = \argmax_{k \in 1,\ldots, G } Pr\left( Y = g_k \mid X=x \right). 
-$$ 
-This is called the \textbf{Bayes classifier}. The error rate of this classifier is called the \textbf{Bayes error rate}. The Bayes error rate is like the irreducible error that we had before for linear regression, where the irreducible error was $Var(\epsilon)$ and it related to variation in $Y$ that could not be explained by $X$. The Bayes error rate is the same: no matter how good our statistical learning model is, we can never beat the Bayes error rate, and we can never beat the model that knows $Pr\left( Y = g_k \mid X=x \right)$ and always predicts the $Y$ that maximizes this probability. 
+You can run lasso (with CV to choose $\lambda$ on your data). This will return a $p$-dimensional coefficient vector with a lot of $0$s. 
 
-Instead, we will think about methods that try to approximate the Bayes classifier using various techniques! 
-\begin{itemize}
-\item Warm up 1: Think about KNN for classification! How does it directly approximate the Bayes classifier? When will it do well and when will it do poorly? 
-\item Warm up 2: What do you remember about logistic regression, and how does it relate to the Bayes classifier? 
-\end{itemize}
+You could just start interpreting the non-zero regression coefficients in the way you would interpret multiple regression coefficients. But the slightly strange thing is that, not only did lasso set a bunch of coefficients to $0$, but it also shrunk the non-zero coefficients! While it turns out that this shrinking is mathematically good for the bias/variance tradeoff, it isn't good for interpretation! 
 
+So, a common thing to do is to re-fit your model using \texttt{lm()} (unpenalized regression) after running lasso, but using only the variables that lasso selected.
 
-\subsubsection{Review of logistic regression}
+This is nice! Under the assumption that lasso selected the ``true" set of non-zero variables, these coefficients are unbiased for the ``true" coefficients and you can interpret them and do inference. This is a very strong assumption. Among variables that lasso selected that turn out to not truly be important, if you trust the \texttt{lm()} p-values you will get a hugely inflated Type 1 error rate. This is what I mean when I say that ``inference after lasso is invalid".
 
-Assume for now that there are only two classes! So $Y$ can take on values $0$ or $1$. 
+This is my passion and my research area so if you want to know more about this come ask me! The stepwise regression problem on HW3 also gets at this. But mainly I did not spend much class time on this because inference isn't necessarily the focus of this class. 
 
-The notion of Bayes classifier tells us that we should try to model $Pr(Y=1 \mid X=x)$. Since we are doing binary classification, this is all we need: we will predict $\hat{Y}=1$ if our estimated probability is greater than 0.5, and we will predict $\hat{Y}=0$ otherwise. 
+Also, it's good to know about this "re-fit the model without a penalty" idea, because it seems that they use this technique in the ``modern comparison" paper above when they do the ``relaxed lasso", which they find works really well! 
+\subsubsection{ElasticNet}
 
-If we would like to fit a parametric model for $Pr(Y=1 \mid X=x)$, a simple first idea would be to assume that
-$$
-Pr(Y=1 \mid X=x) = \beta^T X.
-$$
-We could estimate this with linear regression! But the issue is that we will end up getting predicted probabilities outside of $0$ and $1$.
+We have a method that combines the strength and weaknesses of Ridge and Lasso. 
+\begin{equation}
+\label{subset}
+\hat{\beta}_{elasticnet,\lambda, \alpha} = \argmin_{b \in \mathbb{R}^p} \sum_{i=1}^n 	(y_i - b^T x_i)^2 + \lambda \left( \alpha ||b||_1 + \frac{(1-\alpha)}{2}||b||^2_2\right) 
+\end{equation}
 
-The solution, which you have all seen before, is to use a \emph{link function}. The link function will let us use the basic idea of a linear model, but constrain our predictions to be between $0$ and $1$ so that they can be interpreted as probabilities. This is logistic regression: confusingly named, because it is a classification method, but it also has deep ties to linear regression and other generalized linear models. We assume that:
-$$
-Pr(Y=1 \mid X=x) = \frac{e^{\beta^T X}}{1 + e^{\beta^T x}}.
-$$
-To solve this, we find the vector $\hat{\beta}$ that minimizes the negative log likelihood of the training data. 
-
-This model ends up being pretty interpretable (recall from Stat 346 that we can interpret our coefficients on a log-odds scale). Furthermore, if our model assumption holds (the log-odds truly are linear in the Xs), then theorems from Stat 360 tell us that the maximum likelihood estimator is asymptotically unbiased and achieves the asymptotically smallest possible variance among all unbiased estimators. This is just like our BLUE fact for linear models. Basically, logistic regression should perform well if our assumptions are met. 
-
-However, if we have a ton of predictors $p$, then our variance can be quite high, and we might actually do better with a biased estimate. Since this optimization problem fits the general framework of looking for a $\hat{\beta}$ that minimizes a training  dataset \emph{loss function}, we can reduce our variance with by adding a ridge or lasso penalty to our loss function! And everything will work like it did for linear models! Much of what we have been learning is broader than a single algorithm! 
-
-I don't have too much else to say for today! I am sure we will return to logistic regression next class, and I am also sure that you have seen it before! Please read textbook chapter 4 for more information.
-
-Next class we will talk about ROC curves and asymmetric loss functions. AKA why you might decide NOT to predict $\hat{Y}=1$ whenever your predicted probability exceeds 0.5, but instead might pick a different threshold.  
-
-
+You could go explore and see if you think this actually works better than Lasso or Ridge individually! And explore its properties! You can also see the shape of the constraint function in ESL Page 73. This section of ESL also talks more about the connection between regularization and Bayesian regression with different priors. How cool and neat!! 
