@@ -71,30 +71,30 @@ How does this idea relate to Figure~\ref{fig_lassoridge}?
 The .Rmd document that I posted on GLOW gives you code to actually make Figure 1 for any dataset that you generate, and plot the Ridge and Lasso solutions. I hope that you will play around with this code until you understand what is being plotted, and believe me that Lasso tends to give sparse solutions! 
 
 
-\subsection{A quick aside about degrees of freedom: we skipped this in class, but it is important.}
-
-We have been talking about how the bias/variance tradeoff is a function of model complexity. I have been calling this ``how wiggly a function is"- or how capable the model is of overfitting to the training set. 
-
-One way to formally measure the complexity of a mode is the \emph{degrees of freedom}. I am sure that you have all heard of degrees of freedom before, but I am not sure that you have ever seen it defined formally. As far as I can tell, ISL avoids defining this formally: they just talk about it being the effective number of parameters in a model. 
-
-I feel like we should mention the official definition at least once. Assume that $x_1,\ldots,x_n$ are fixed. Let $g(y) = \hat{y}$, where $g$ is a "model fitting procedure", that takes in the observed values of $y$ as input and trains a prediction model and returns the training set predictions. We are not writing this as $\hat{f}$ because it does not refer to a specific fitted model: it refers to the procedure. And we are not writing it as a function of $X$ because the $X$s are just hiding in the background since they are not random. According to this paper, \url{https://www.stat.berkeley.edu/~ryantibs/papers/sdf.pdf}, 
-$$
-df(g) = \frac{1}{\sigma^2} \sum_{i=1}^n Cov(Y_i, g(Y)_i),
-$$
-where $\sigma$ is $Var(Y_i)$, which is assumed to be constant across $i$. 
-
-Calculating degrees of freedom is really straightforward for simple procedures like linear regression. For more complicated procedures, actually computing this is really complicated! So we might need to estimate or approximate some degrees of freedom. 
-
-I don't think we are going to spend too much more time on this. ISL says it is ``outside the scope of the book". But I think we should mention DF or approximate DF for some models we have seen so far. 
-\begin{itemize}
-\item Linear regression with $p$ coefficients: $p$ degrees of freedom. 
-\item KNN: we are making around $n/k$ unique predictions, so we have around $n/k$ degrees of freedom. In fact, $n/k$ is an unbiased estimator for the degrees of freedom apparently. But the true DF depends on the distribution of the $X$s: how many of your ``regions" overlap affects the number of effective parameters. 
-\item Ridge: You can prove directly from the definition that ridge regression with $p$ coefficients has $< p$ degrees of freedom, and the DF shrinks as $\lambda$ grows. This is because the penalty makes it strictly less wiggly than unpenalized regression on all $p$ predictors. 
-\item Lasso: If you apply Lasso with $p$ predictors but end up with $p_0$ predictors, it turns out that $p_0$ is an unbiased estimate for the degrees of freedom of Lasso! This is magic! We are considering many more than $p_0$ possible models, which would make you think it is bigger than $p_0$. But, we are also ending up with a $p_0$-dimensional linear regression model and applying shrinkage to this model, which would make you think it is smaller than $p_0$. These two factors apparently average out to $p_0$! 
-\item Stepwise regression or subset regression: If you start with $p$ predictors but end up with $p_0$ predictors in the final model, your DF should be larger than $p_0$. Because, even though your final model uses $p_0$, you also gave yourself a bunch of options for models to try out, which allows for a bit more potential for overfitting compared to just lm on a fixed set of $p_0$ predictors. 
-\end{itemize}
-
-TLDR: Ridge and Lasso are both LESS WIGGLY than linear regression. Next week, we will see some models that are MORE WIGGLY than linear regression, such as splines or GAMS. 
+%\subsection{A quick aside about degrees of freedom: we skipped this in class, but it is important.}
+%
+%We have been talking about how the bias/variance tradeoff is a function of model complexity. I have been calling this ``how wiggly a function is"- or how capable the model is of overfitting to the training set. 
+%
+%One way to formally measure the complexity of a mode is the \emph{degrees of freedom}. I am sure that you have all heard of degrees of freedom before, but I am not sure that you have ever seen it defined formally. As far as I can tell, ISL avoids defining this formally: they just talk about it being the effective number of parameters in a model. 
+%
+%I feel like we should mention the official definition at least once. Assume that $x_1,\ldots,x_n$ are fixed. Let $g(y) = \hat{y}$, where $g$ is a "model fitting procedure", that takes in the observed values of $y$ as input and trains a prediction model and returns the training set predictions. We are not writing this as $\hat{f}$ because it does not refer to a specific fitted model: it refers to the procedure. And we are not writing it as a function of $X$ because the $X$s are just hiding in the background since they are not random. According to this paper, \url{https://www.stat.berkeley.edu/~ryantibs/papers/sdf.pdf}, 
+%$$
+%df(g) = \frac{1}{\sigma^2} \sum_{i=1}^n Cov(Y_i, g(Y)_i),
+%$$
+%where $\sigma$ is $Var(Y_i)$, which is assumed to be constant across $i$. 
+%
+%Calculating degrees of freedom is really straightforward for simple procedures like linear regression. For more complicated procedures, actually computing this is really complicated! So we might need to estimate or approximate some degrees of freedom. 
+%
+%I don't think we are going to spend too much more time on this. ISL says it is ``outside the scope of the book". But I think we should mention DF or approximate DF for some models we have seen so far. 
+%\begin{itemize}
+%\item Linear regression with $p$ coefficients: $p$ degrees of freedom. 
+%\item KNN: we are making around $n/k$ unique predictions, so we have around $n/k$ degrees of freedom. In fact, $n/k$ is an unbiased estimator for the degrees of freedom apparently. But the true DF depends on the distribution of the $X$s: how many of your ``regions" overlap affects the number of effective parameters. 
+%\item Ridge: You can prove directly from the definition that ridge regression with $p$ coefficients has $< p$ degrees of freedom, and the DF shrinks as $\lambda$ grows. This is because the penalty makes it strictly less wiggly than unpenalized regression on all $p$ predictors. 
+%\item Lasso: If you apply Lasso with $p$ predictors but end up with $p_0$ predictors, it turns out that $p_0$ is an unbiased estimate for the degrees of freedom of Lasso! This is magic! We are considering many more than $p_0$ possible models, which would make you think it is bigger than $p_0$. But, we are also ending up with a $p_0$-dimensional linear regression model and applying shrinkage to this model, which would make you think it is smaller than $p_0$. These two factors apparently average out to $p_0$! 
+%\item Stepwise regression or subset regression: If you start with $p$ predictors but end up with $p_0$ predictors in the final model, your DF should be larger than $p_0$. Because, even though your final model uses $p_0$, you also gave yourself a bunch of options for models to try out, which allows for a bit more potential for overfitting compared to just lm on a fixed set of $p_0$ predictors. 
+%\end{itemize}
+%
+%TLDR: Ridge and Lasso are both LESS WIGGLY than linear regression. Next week, we will see some models that are MORE WIGGLY than linear regression, such as splines or GAMS. 
 
 \subsection{Other}
 
@@ -133,3 +133,7 @@ We have a method that combines the strength and weaknesses of Ridge and Lasso.
 \end{equation}
 
 You could go explore and see if you think this actually works better than Lasso or Ridge individually! And explore its properties! You can also see the shape of the constraint function in ESL Page 73. This section of ESL also talks more about the connection between regularization and Bayesian regression with different priors. How cool and neat!! 
+
+
+
+

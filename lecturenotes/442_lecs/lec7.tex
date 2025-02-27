@@ -1,0 +1,193 @@
+\section{Thursday, Feb 27: making models more complex}
+
+\subsection{Where are we?}
+
+We have been talking about ways to predict $Y$ from predictors $X_1,\ldots, X_p$. We have now covered cases where $Y$ is numerical and cases where $Y$ is categorical: and it turns out that many of the common themes hold in both cases. 
+
+In basically all cases, we are trying to predict $Y$ using $X$. We think there is some true function $f()$ that would help us make predictions. But, since we don't know $f()$, we will use our training data to come up with an approximation $\hat{f}(X)$. We usually pick the $\hat{f}(X)$ that does the ``best job" on our training data (i.e. $\hat{f}(X) \approx y$), but then we use a test set or cross-validation to make sure that we are not \emph{overfitting}. 
+
+It is up to us to decide how complex we want to allow $\hat{f}(X)$ to be. Do we want to restrict ourselves to something simple like a linear model? Or do we want to allow  $\hat{f}(X)$ to be very wiggly? This choice always involves a tradeoff between bias and variance.
+
+Last week, we talked about a setting where $p$ is large, and where even a simple linear model has variance that is too high. Thus, we talked about feature selection, dimension reduction, and regularization. These are all ways to take the linear model:
+$$
+\hat{Y} = \hat{\beta}_0 + \hat{\beta}_1 X_1 + \ldots + \hat{\beta}_p X_p
+$$
+and make this linear model LESS wiggly, so as to reduce the variance.
+
+Today, we are going to talk about ways to take this simple linear model and make it MORE wiggly, so as to reduce the bias. For simplicity, to start, we will return to the case where $p=1$. The model: 
+$$
+\hat{Y} = \hat{\beta}_0 + \hat{\beta}_1 X_1
+$$
+is SO simple. We might be able to see just from looking at a plot that it is not expressive enough to model our data. What do we do about this? This is the topic of Divij's talk. But first, let's spend 5 minutes on Degrees of Freedom, since we skipped it a few classes ago. 
+
+
+
+\subsection{Degrees of Freedom and Effective parameters!}
+
+We have been talking about how the bias/variance tradeoff is a function of model complexity. I have been calling this ``how wiggly a function is"- or how capable the model is of overfitting to the training set. 
+
+One way to formally measure the complexity of a mode is the \emph{degrees of freedom}. I am sure that you have all heard of degrees of freedom before, but I am not sure that you have ever seen it defined formally. As far as I can tell, ISL avoids defining this formally: they just talk about it being the effective number of parameters in a model. 
+
+I feel like we should mention the official definition at least once. Assume that $x_1,\ldots,x_n$ are fixed. Let $g(y) = \hat{y}$, where $g$ is a "model fitting procedure", that takes in the observed values of $y$ as input and trains a prediction model and returns the training set predictions. We are not writing this as $\hat{f}$ because it does not refer to a specific fitted model: it refers to the procedure. And we are not writing it as a function of $X$ because the $X$s are just hiding in the background since they are not random. According to this paper, \url{https://www.stat.berkeley.edu/~ryantibs/papers/sdf.pdf}, 
+$$
+df(g) = \frac{1}{\sigma^2} \sum_{i=1}^n Cov(Y_i, g(Y)_i),
+$$
+where $\sigma$ is $Var(Y_i)$, which is assumed to be constant across $i$. 
+
+Take a few moments to let this definition sink in. What is it telling us? What is the degrees of freedom of a procedure that memorizes the training set (and therefore gets 0 training error)? 
+$$
+df(\text{memorizer}) =  \frac{1}{\sigma^2} \sum_{i=1}^n Cov(Y_i, Y_i) = \frac{1}{\sigma^2} \sum_{i=1}^n \sigma^2 = \frac{1}{\sigma^2} n \sigma^2 = n.
+$$
+This tells us that the degrees of freedom of 1NN, for example, which we know to be extremely wiggly, is the size of the training set $n$!
+
+Calculating degrees of freedom is straightforward for simple procedures like linear regression. For more complicated procedures, actually computing this is really complicated! So we might need to estimate or approximate some degrees of freedom. 
+
+The concept of degrees of freedom is very related to the concept of ``optimism". These concepts are covered in Chapter 7 of \textbf{ESL} (not ISL). I have been sprinkling these concepts in throughout the course, but next week I will be sure to put a question specifically about model complexity on the HW! 
+
+I don't think we are going to spend too much more time on this. ISL says it is ``outside the scope of the book". But I think we should mention DF or approximate DF for some models we have seen so far. 
+\begin{itemize}
+\item Linear regression with $p$ coefficients: $p$ degrees of freedom. 
+\item KNN: we are making around $n/k$ unique predictions, so we have around $n/k$ degrees of freedom. In fact, $n/k$ is an unbiased estimator for the degrees of freedom apparently. But the true DF depends on the distribution of the $X$s: how many of your ``regions" overlap affects the number of effective parameters. 
+\item Ridge: You can prove directly from the definition that ridge regression with $p$ coefficients has $< p$ degrees of freedom, and the DF shrinks as $\lambda$ grows. This is because the penalty makes it strictly less wiggly than unpenalized regression on all $p$ predictors. 
+\item Lasso: If you apply Lasso with $p$ predictors but end up with $p_0$ predictors, it turns out that $p_0$ is an unbiased estimate for the degrees of freedom of Lasso! This is magic! We are considering many more than $p_0$ possible models, which would make you think it is bigger than $p_0$. But, we are also ending up with a $p_0$-dimensional linear regression model and applying shrinkage to this model, which would make you think it is smaller than $p_0$. These two factors apparently average out to $p_0$! 
+\item Stepwise regression or subset regression: If you start with $p$ predictors but end up with $p_0$ predictors in the final model, your DF should be larger than $p_0$. Because, even though your final model uses $p_0$, you also gave yourself a bunch of options for models to try out, which allows for a bit more potential for overfitting compared to just lm on a fixed set of $p_0$ predictors. 
+\end{itemize}
+
+TLDR: Ridge and Lasso are both LESS WIGGLY than linear regression with $p$ predictors. They have fewer than $p$ ``effective parameters" because of the regularization. 
+
+Note that, in this group, KNN is the only model whose degrees of freedom grows with the size of the training set $n$. This is in fact what it means for KNN to be \emph{nonparametric.}
+
+Returning to our example for today, suppose that we only have one predictor $X$ and we are going to fit the model:
+$$
+\hat{Y} = \hat{\beta}_0 + \hat{\beta}_1 X_1.
+$$
+This is sort of a bummer because it only has two degrees of freedom! This might not be enough! We all already know that we could increase the complexity (df) of this model by instead fitting something like 
+$$
+\hat{Y} = \hat{\beta}_0 + \hat{\beta}_1 X_1 + \hat{\beta}_2 X_1^2 + \hat{\beta}_3 X_1^3.
+$$
+Today we will discuss even better ways to do this!
+
+
+\subsection{Splines}
+
+There are actually two distinct topics here: regression splines and smoothing splines. At first glance, they do not seem that similar! But a beautiful theorem tells us why they are related, and therefore why they both get the name ``spline". 
+
+\subsubsection{Regression splines}
+
+These start from a pretty straightforward motivation. 
+
+We already know about polynomial regression, We can fit the model 
+$$
+\hat{Y} = \hat{\beta}_0 + \hat{\beta}_1 X_1 + \hat{\beta}_2 X_1^2 + \hat{\beta}_3 X_1^3
+$$
+using ``lm()" in R, by just passing in our squared terms and cubic terms as new predictors. 
+
+But we don't need to limit ourselves to polynomials. Many of you have likely also used models of the form
+$$
+\hat{Y} = \hat{\beta}_0 + \hat{\beta}_1 1(X_1  < c),
+$$
+which produces a step function. This is what we do when we decide that maybe our model is better if we convert a numerical predictor variable $X_1$ to a categorical predictor variable. Once again, we can just fit this model with ``lm". 
+
+More generally, we can use any set of fixed/known basis function to turn $X_1$ into an arbitrarily wiggly and complicated function. As long as we use less than $n$ basis functions, we can still fit the model with `lm() in R.
+
+People have proposed regression splines as a really nice way to make basis functions. These are piecewise polynomials. The idea is that, to make the model 
+$
+\hat{Y} = \hat{\beta}_0 + \hat{\beta}_1 X_1 + \hat{\beta}_2 X_1^2 + \hat{\beta}_3 X_1^3
+$ more complex, we could add a term of degree 4 or degree 5. But high degree polynomials tend to have really crazy behavior. What if, instead, we limited ourselves to cubic, but we added a ``knot", and we let the coefficients be different on either side of the knot. 
+This could be nice, but this could also lead to discontinuous functions which we don't want! The spline basis representation gives a way to make continuous piecewise-constant polynomials with smooth derivatives. A \emph{natural spline} is additionally linear outside of the range of the training $X$s, which keeps predictions from blowing up to crazy values if we extrapolate beyond our training data. 
+
+I don't really care if you know the formulas for a spline basis representation: I just care that you understand how the concept a spline fits into our framework of the bias/variance tradeoff. We could decide how many knots to give our spline using cross validation! I also care that you understand that fitting a spline just means using ``lm()" on a new set of features. You will do this on your homework!
+
+\subsubsection{Smoothing splines}
+
+These start from a totally different, non-parametric motivation. Still assume that we only have one predictor. 
+
+Suppose that we wanted to find the function $g()$ that minimizes
+$$
+\sum_{i=1}^n (y_i - g(x_i))^2
+$$
+on the training set, but we did not want to specify a particular form for $g()$. For example, we don't want to choose in advance to make it linear, or a cubic spline, or a sin curve, etc. What we do know is that a function that is too wiggly will have high variance and will not generalize well. So, we decide that we will add a penalty term for ``non-smooth" functions $g()$.
+
+This sounds like regularization! Indeed, we will try to minimize:
+$$
+\sum_{i=1}^n (y_i - g(x_i))^2 + \lambda \int g''(t)^2 dt.
+$$
+Integrating over the second derivative just means summarizing how much $g'(t)$ changes over the entire range of $t$. If we fit a linear model, then $g''(t)$ is $0$, and so there is no penalty on a linear model. The parameter $\lambda$ is a tuning parameter that tells us how much we should penalize non-linear or wiggly functions. 
+
+The function $g()$ that minimizes this equation is called a smoothing spline. Why is it called a spline? See the beautiful theorem. 
+
+\subsubsection{Beautiful theorem}
+
+It turns out that, out of all functions $g()$, the one that minimizes 
+$$
+\sum_{i=1}^n (y_i - g(x_i))^2 + \lambda \int g''(t)^2 dt.
+$$
+is actually a natural cubic spline with knots at every training data point $x_1,\ldots, x_n$. Woah!!!
+
+Does this mean that, to get an optimal smoothing spline, we can just use ``lm()" in R and regress $y$ on the natural spline basis function with $x_1,\ldots, x_n$ knots? 
+\begin{itemize}
+\item No
+\item The first reason we cannot do this is that the natural spline basis function with $x_1,\ldots, x_n$ knots has more than $n$ terms. This means that we would be fitting a linear model with $n$ datapoints onto more than $n$ predictors. R cannot solve this for us, since $(X^TX)$ cannot be inverted.
+\item Also, if we COULD solve the least squares solution for regressing $y$ on the natural spline basis function with $x_1,\ldots, x_n$ knots, it would get $0$ training error and would memorize the training set. This is not actually what we want!
+\item The penalty term $\lambda$ ends up enforcing that we also shrink all of our coefficients towards $0$: as we would with ridge regression.
+\item So, we fit this using a different R package. I think it might be the default in ``geom\_smooth()"! But it is really cool to know about the connection with a natural cubic spline.
+\item QUESTION: from the penalty perspective, why does it make perfect sense that $g()$ is a NATURAL cubic spline, meaning that it is linear outside of the range of the training points? 
+\end{itemize}
+
+\subsection{GAMs}
+
+\subsubsection{What is a GAM?}
+
+Let's build on the spline idea, but now let's suppose that we actually have more than one predictor. We have $X_1, \ldots, X_p$, and we want to let the function $\hat{f}(X)$ be wiggly in all of the predictors (if needed).
+
+We could try to do a spline basis expansion for every single variable. But this would start to get kind of crazy! We don't necessarily have a larger $n$ than we did before. If we add 12 coefficients for every predictor variable, we are going to have the number of coefficients exceed the number of variables pretty quickly: and then we can no longer fit with lm! 
+
+Let's restrict our attention to models where we don't allow the predictors to interact with each-other. This is limiting in some ways. But, if we want to start letting variables interact, the complexity of our problem blows up even more quickly. 
+
+So, lets model:
+$$
+Y = \beta_0 + \beta_1 f_1 (X_1) + \beta_2 f_2 (X_2) + \beta_3 f_3 (X_3) + \ldots.  
+$$
+Each $f_j()$ could be any basis function representation of $X_j$. If could simply be a linear model if we think that $Y$ is linear in $X_j$, but it could also be a full on smoothing spline for a different predictor. Note that, because $f_j$ can be whatever we want, it can also absorb the coefficient $\beta_j$. So we will actually just write this as: 
+$$
+Y = \beta_0 + f_1 (X_1) + f_2 (X_2) + f_3 (X_3) + \ldots.  
+$$
+A nice thing about the additivity is that I can visualize one variable at a time, and decide how wiggly I think $Y$ needs to be in that particular variable. This does not take into account the idea of ``holding all other variables constant", but can be a nice first approximation. 
+
+GAMS are really powerful. Suppose that we really want to be able to \emph{interpret} the effect of $X_1$ on $Y$, but we want to make sure we have already sucked up all possible variation that could be explained by other components $X_2,\ldots,X_p$. We could let $f_j()$ be a smoothing spline for all $j > 1$, but force $f_1()$ to be a linear function. This would let us interpret the linear effect of $X_1$ on the part of $Y$ that would still be noise even if we fit a many-dimensional geom\_smooth() to all other predictors. That is cool! 
+
+\subsubsection{How do we fit a GAM?}
+
+Unless all components $f_j$ are pre-specified with a parametric basis function, we cannot fit a GAM using least squares.
+
+Instead, we take advantage of the additive structure to do an iterative back-fitting procedure. The function GAM in R implements this for you, and by default it uses a natural spline for each $f_j$. 
+
+To learn about the back-fitting algorithm, see page 297 of ESL. The idea is that, since everything is additive, we can iteratively fit a model that predicts 
+$
+Y - \hat{\beta}_0 - \sum_{j \neq j^*} \hat{f}_j(X_j) 
+$ using $X_{j^*}$. This will let us see the function that ``right now" best predicts $Y$ using  $X_{j^*}$, after taking into account all variation currently explained by other predictors. We start with random guesses for all of the $\hat{f}_j$ terms, and we iterate through $j=1,\ldots,p$ many times until convergence. 
+
+What I want you to know about backfitting is: the fact that we can do one variable at a time makes this relatively easy! With neural networks next week, we will not be able to go one variable at a time, because we will have interactions! This will necessitate a more advanced algorithm. 
+
+
+\subsection{What do we think about splines and GAMs?}
+\begin{itemize}
+\item Bias: they have less bias than linear regression if the true data generating mechanism is not linear. 
+\item Variance: they can have high variance if we let them be too wiggly. 
+\item Interpretability: they are not black boxes. they are parametric, and we can examine them to figure out which predictors impact our predictions. but they can get kind of complex and kind of hard to interpret! Especially without drawing a graph. 
+\item Computational efficiency: regression splines can be fit very efficiently. GAMs require an iterative algorithm, but the fact that they are additive still makes this algorithm reasonably efficient. 
+\item Anything else I am missing? 	
+\end{itemize}
+
+You could add a spline basis function to a logistic regression. You can also definitely use GAMs for classification. So ... none of this was specific to regression! The concepts of wiggly and less wiggly apply to classification too!
+
+The main idea of class next Monday will be: what happens when we drop the additivity requirement?! It is going to turn out that, when we let models be non-linear AND we allow for interactions, we get crazy complex models! Such as neural networks!
+
+
+
+
+
+
+
+
+
