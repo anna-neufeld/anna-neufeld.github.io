@@ -167,7 +167,7 @@ $
 Y - \hat{\beta}_0 - \sum_{j \neq j^*} \hat{f}_j(X_j) 
 $ using $X_{j^*}$. This will let us see the function that ``right now" best predicts $Y$ using  $X_{j^*}$, after taking into account all variation currently explained by other predictors. We start with random guesses for all of the $\hat{f}_j$ terms, and we iterate through $j=1,\ldots,p$ many times until convergence. 
 
-What I want you to know about backfitting is: the fact that we can do one variable at a time makes this relatively easy! With neural networks next week, we will not be able to go one variable at a time, because we will have interactions! This will necessitate a more advanced algorithm. 
+What I want you to know about back-fitting is: the fact that we can do one variable at a time makes this relatively easy! With neural networks next week, we will not be able to go one variable at a time, because we will have interactions! This will necessitate a more advanced algorithm. 
 
 
 \subsection{What do we think about splines and GAMs?}
@@ -182,8 +182,6 @@ What I want you to know about backfitting is: the fact that we can do one variab
 You could add a spline basis function to a logistic regression. You can also definitely use GAMs for classification. So ... none of this was specific to regression! The concepts of wiggly and less wiggly apply to classification too!
 
 The main idea of class next Monday will be: what happens when we drop the additivity requirement?! It is going to turn out that, when we let models be non-linear AND we allow for interactions, we get crazy complex models! Such as neural networks!
-
-
 
 
 
