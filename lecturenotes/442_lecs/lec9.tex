@@ -174,7 +174,17 @@ Ok, but even with all of these strategies, don't we think that these massive mod
 
 This is one of my favorite topics! See ISL 10.8 for a beautiful explanation. You will also explore this concept on your homework, and I may fill in these notes in more detail after Thursday's class. 
 
-The story of double descent is shown in Figure~\ref{fig_dd}. 
+The story of double descent is shown in Figure~\ref{fig_dd}. We know that as the degrees of freedom in a model approaches $n$, the training set size, the training error goes to $0$. This is the interpolation threshold; or the point at which our model is simply memorizing the training data.
+
+Classical statistical theory says that the test set should be really bad at this point.
+
+But, in practice, people noticed that for deep learning, you could keep making the model MORE complex (more layers, more nodes) AFTER the interpolation threshold, and while the training error remains 0, the test error starts to decrease again. This is called double descent: and some people thought it was magic! They thought it totally changed our interpretation of ALL of statistics!! What happened to the bias-variance tradeoff?
+
+It turns out that the issue with this plot is what we draw on the X-axis. If we draw the X-axis as ``number of parameters", double descent does indeed happen. But if we correctly make the axis the degrees of freedom, we will not see the double descent phenomenon. See this awesome recent paper: \url{https://proceedings.neurips.cc/paper_files/paper/2023/hash/aec5e2847c5ae90f939ab786774856cc-Abstract-Conference.html}. 
+
+On your homework, you will see how this plays out for linear regression onto natural splines. It turns out that, if we continue to increase the degrees of freedom of our spline basis past the interpolation threshold, we end up doing some automatic regularization that we didn't (necessarily) realize we were doing. This means that we aren't actually just increasing model complexity without bound! We are fitting a regularized model, and so number of parameters is no longer equal to model complexity. 
+
+For deep learning, it turns out that stochastic gradient descent actually does implicit regularization. If there are many possible parameter vectors that would all give the same interpolating solution, SGD finds the minimum-norm solution. This is regularization! So ... there is no magic. Deep learning performs well because it has no bias and is ALSO regularized to have low variance. 
 
 \begin{figure}
 \centering 
