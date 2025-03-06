@@ -1,31 +1,39 @@
 \section{Thursday, March 6: Fitting a neural network: backpropagation and gradient descent}
 
-Given our neural network architecture and our training data, we need a way to FIT the network. This means coming up with values for all of the $w$s and all of the $\beta$s. These should be chosen to give us good predictive accuracy on the training set (although we also want to be careful of overfitting). We will fit a neural network with gradient descent (a very general technique). They key insight for neural networks is that we can use the chain rule to do gradient descent in a very organized way, called backpropagation. 
+Recall from Monday that our neural network model with one hidden later is a model that makes predictions of the form:
+\begin{equation}
+\label{nn_thurs}
+\hat{y} = f(X) = \beta_0 + \sum_{k=1}^K \beta_k g\left(w_{k0}+\sum_{j=1}^p w_{kj} x_j\right). 
+\end{equation}
+Because this is a lot of parameters to keep track of, we sometimes draw the model as a picture. But ultimately, given our neural network architecture (our picture, which should tell us $K$ and should tell us if the network is ``fully connected"), we need to use our training data to FIT the network.
+
+This just means coming up with values $\hat{\theta} = (\hat{w}_{01}, \ldots, \hat{w}_{Kp}, \hat{\beta}_0, \ldots, \hat{\beta}_K)$ that minimize the error over our training set: 
+$$
+\sum_{i=1}^n (Y_i - \hat{Y}_i)^2.
+$$
+Of course eventually we will also care about overfitting and test error. But to start, let's just figure out how we might even minimize the loss when $\hat{Y}_i$ has the form in \eqref{nn_thurs}. It is not going to be simple! We are going to need to use an optimization technique called gradient descent. The key insight for neural networks is that we can use the chain rule to do gradient descent in a very organized way, called backpropagation. 
 
 \subsection{Gradient descent}
 
-Let $\theta$ be a really long vector that denotes our current set of parameters (values for every line in our neural network picture). Recall that $\theta$ consists of $w$s and $\beta$s, where $w$s operate between the inputs and the hidden layers, and $\beta$s act on the activation layer to give us the output. 
-
-Given $\theta$, we can send an input example $X_i$ ``forward" through the network. This gives us a prediction $\hat{Y}_i$. 
-
-Since this is a training example, we can then compute the loss: $(Y_i - \hat{Y}_i)^2$. 
-
-If we do this over the whole training set, we get the overall loss for this current value of $\theta$:
+Let $\theta$ be a long vector that stores all of our parameters in our network. So our goal is to minimize, with respect to $\theta$, 
 $$
 L(\theta) = \sum_{i=1}^n (Y_i - \hat{Y}_i)^2.
 $$
+Unfortunately, for neural networks, this is too complicated to just take the derivative with respect to every single parameter and set them equal to $0$. This would be a massive system of equations.
 
-Whenever we have a loss function that we want to optimize with respect to $\theta$, we wish we could take the derivative and set it equal to $0$. Here, there is no way we will be able to solve for that in closed form!
+So instead of solving for a minimum directly, let's try to do it iteratively.
 
-Instead, let's take steps along the negative gradient (with respect to $\theta$) of the loss function. The gradient of $L(\theta)$ with respect to $\theta$ is denoted $\nabla L(\cdot)$. The gradient is simply the vector of partial derivatives with respect to each element of $\theta$.  
+Let's start with $\theta^{0}$: a set of random guesses for every parameter in the network. These values will produce estimates $|hat{Y}_i$ for every element in our training set: they probably will just not be very good estimates!
 
-We want to take steps in the direction of the negative gradient of the loss function so that we always move a current guess $\theta^t$ to a new guess $\theta^{t+1}$ in a way that will make the loss smaller the next time we compute it. What a nice idea!
+Then, let's take steps along the negative gradient (with respect to $\theta$) of the loss function. The gradient of $L(\theta)$ with respect to $\theta$ is denoted $\nabla L(\cdot)$. The gradient is simply the vector of partial derivatives with respect to each element of $\theta$.  Once we have taken this step, we will update our values of all of our parameters, so $\theta^{0}$ becomes $\theta^{1}$. This new vector then yields new predictions $\hat{Y}$ for every training point.
+
+The idea is that, if we take steps in the direction of the negative gradient of the loss function, we always move a current guess $\theta^t$ to a new guess $\theta^{t+1}$ in a way that will make the loss smaller the next time we compute it. What a nice idea!
 
 While we take a step in the ``direction" of the gradient, we don't want to take a step that is the SIZE of the gradient. We want to take really small steps so that we don't ``overshoot" a minimum. So we let: 
 $$
 \theta^{t+1} = \theta^t - \rho \nabla L(\theta^{t}),
 $$
-where $\rho$ is a small learning rate that we get to pick.
+where $\rho$ is a small learning rate that we get to pick. Picking it can actually be really finicky: if it is TOO small you will never find a good value of $\theta$. But if it is too big you can ``overshoot" a minimum. 
 
 Note: if our step size $\rho$ is going to be approximately the same for all elements of $\theta$, we probably want the elements of $\theta$ to all be in the same ``units". This means that we probably want to normalize our input variables $X$! This is not changed from other algorithms. 
 
@@ -126,25 +134,30 @@ So, the size of the step depends on the learning rate $\rho$, the size of the re
 
 Instead of computing the loss function and the gradient over all $n$ training instances at once, we typically go instance-by-instance or batch-by-batch. This is related to \emph{online learning}, which you read about for HW2. A batch is just a subset of the $n$ training observations. The motivation is that we will speed up our learning about $\theta$ by updating $\theta^{t}$ more often. If our training set is huge, we don't want to bother processing a massive training set with a bad guess $\theta^{t}$. We should take advantage of the fact that we see a lot of errors in the first few training examples, and we should update $\theta^{t}$ to $\theta^{t+1}$ right away. 
 
-This is stochastic because our gradient computed on a small number of training observations should be a good approximation of our overall gradient. But the exact step we take depends on the specific training observation! VERY STRANGELY: It turns out that stochastic gradient descent enforces its own form of approximately quadratic regularization. We will come back to this! So there is something really important about the relationship between stochastic gradient descent and overfitting, that wasn't necessarily the original motivation for SGD. 
+If we are using SGD and we end up iterating through the entire training set 10 times, this means that we used 10 epochs. But, this might mean that we used $T=100$ updates of $\theta$, if our batch size was 1/10 of the training set. We need to decide how many epochs we want, etc. 
 
-It also turns out that the extra noise added with SGD can help us avoid local minima! That is cool too! We bounce around $\theta$-space and explore a bit more. 
+This is stochastic because our gradient computed on a small number of training observations should be a good approximation of our overall gradient. But the exact step we take depends on the specific training observation! It also turns out that the extra noise added with SGD can help us avoid local minima! That is cool too! We bounce around $\theta$-space and explore a bit more. 
 
-If we are using SGD and we end up iterating through the entire training set 10 times, this means that we used 10 epochs. But, this might mean that we used $T=100$ updates of $\theta$, if our batch size was 1/10 of the training set. 
+Very strangely: it turns out that stochastic gradient descent enforces its own form of approximately quadratic regularization. I don't think that this is at all obvious. I learned from preparing for this class that the reason is because stochastic gradient descent gives updates for $\theta$ that remain in the row space of the inputs. Out of all solutions that would give $0$ training error (in a setting where this is possible), stochastic gradient descent is supposed to find the one with the smallest L2 norm. ``Supposed to" because I think it still might not due to initial conditions and step size. But anyway, I don't think this was the motivation for people coming up with SGD, but it is a recently studied property, and it explains double descent!! So cool. 
+
+
+
+
 
 \subsection{Complications}
 
 While (stochastic) gradient descent is a very general idea that can be used in many contexts, it is ultimately only a way to find an approximate minimizer of a loss function. There are a lot of complications.
+\begin{itemize}
+\item We need to choose good initial guesses for the parameters. If we choose bad ones, we can get stuck at local minima.
+\item We need to choose a good step size! To converge in a reasonable about of time without jumping over minima. 
+\item We have to worry about ``vanishing gradients" / the dead ReLU: where once a ReLU unit is outputting a 0 for every training example, its weights never get updated again. 
+\item We need to choose batch size for SGD.
+\item We need to choose how many iterations or epochs to train for. In theory, I guess we should go until the $\theta^t$ stop changing (convergence). But ... what if we have used up all of our computational resources and we have not yet converged? 
+\item We also need to pick our model architecture! How many hidden nodes do we want? How many hidden layers? What activation function should we use? 
+\end{itemize}
 
-We need to choose our step size and our initial guesses for the parameters. We also need to be worried about our initial starting conditions; as these can determine whether or not we get stuck in a local minimum. With bad initial weights (too large), we can have vanishing gradients, and we will think we have converged right away, without ever updating our initial weights. Or, with a ReLU activation function, it is the case that a certain unit is never ``turned on" for the training set given the initial weights, it will actually NEVER get turned on. It is a permanently dead Neuron. All of this is bad! Maybe I will put one of these on your HW. 
+Previously, to pick a tuning parameter, you used cross validation. Doing cross validation for ALL of these choices and coming up with the best possible parameter sets is a full time job. And, literally, this is a full time job that you could all go get! TLDR: you basically need to be an expert to fit a neural network. It is not an ``off-the-shelf" algorithm. 
 
-We also need to know how big of a batch we should use for SGD. 
-
-We need to know how many iterations or epochs to train for. In theory, I guess we should go until the $\theta^t$ stop changing (convergence). But ... what if we have used up all of our computational resources and we have not yet converged? 
-
-All of these things ACTUALLY affect our fit. Fitting a neural network can be so finicky in practice, unless you have a lot of resources and are an expert. This makes them a bit less usable or ``off-the-shelf" than some alternatives. 
-
-We also need to decide on a model architecture before we start. How many hidden nodes do we want? How many hidden layers? What activation function should we use? Etc. 
 
 \subsection{Overfitting and model complexity}
 
