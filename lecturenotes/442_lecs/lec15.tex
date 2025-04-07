@@ -1,0 +1,16 @@
+\section{Thursday, April 10: Bagging, and Random Forests}
+
+Now that you are all warmed-up from being on spring break, it's time to return to learning some new methods. These methods will be the topic of HW6.
+
+Hopefully, what you took away from Monday's class is that we have so many different models that have different pros and cons. Some models are complex but have high variance; other models are simple but have high bias. We will now talk about two broad \emph{ensemble} for taking a sub-optimal model and improving on it. 
+\begin{itemize}
+\item The general idea of \emph{bagging} is to take one model that has high variance, and reduce the variance by averaging over several repeated copies of this model. We will talk about this today!
+\item The general idea of \emph{boosting} is to take one model that has high bias, and reduce the bias by iteratively focusing attention on the examples that we are currently messing up on. 	We will talk about this next time!
+\end{itemize}
+
+Let's consider a deep decision tree as our single learner. There is a fair amount that we like about a deep decision tree (it can uncover interaction terms, it has low bias). However, there is a thing that we do not like about this decision tree. Due to variance (and the particular instability of decision trees due to greedy search), we know that if we had observed a very slightly different training, we would have a totally different tree. This is bad! How do we know what tree will perform best on unseen examples?
+
+Well, here is a really simple idea that works well if we care about predictions. We can take fit $B$ different deep decision trees to $B$ different bootstrap samples of our dataset. Remember that, to get a bootstrap sample, we draw $n$ observations with replacement from our $n$ original training observations. 
+
+
+
