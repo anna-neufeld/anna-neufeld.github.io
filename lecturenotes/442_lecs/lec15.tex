@@ -1,16 +1,130 @@
-\section{Thursday, April 10: Bagging, and Random Forests}
+\section{Thursday, April 10: Bagging and Random Forests}
 
-Now that you are all warmed-up from being on spring break, it's time to return to learning some new methods. These methods will be the topic of HW6.
+\subsection{Model selection recap}
 
-Hopefully, what you took away from Monday's class is that we have so many different models that have different pros and cons. Some models are complex but have high variance; other models are simple but have high bias. We will now talk about two broad \emph{ensemble} for taking a sub-optimal model and improving on it. 
+On Monday, we talked about how to select a model if the main thing we care about is predictive accuracy. Roughly speaking, if your main goal is predictive accuracy, then you should be selecting the model with the lowest error on a test set. 
+\begin{itemize}
+\item You could use a single train/test split. This let's you compare specific models fit to your specific training set.
+\item You could use something like 5-fold cross-validation. This makes more efficient use of the data, but you are no longer looking at the error of a specific model fit to the specific training set. You are looking at an average error that results from a model-fitting procedure applied to 80\% of your training set. 
+\end{itemize}
+There is a lot more that I could say about model selection or about cross-validation. But, at a basic level, you all know how to do this already. You all did it on your take-home midterm, for example. The one thing I want to emphasize that I mentioned briefly last time is the idea of the \textbf{winner's curse.} 
+\begin{itemize}
+\item Suppose that, in reality, there are three models that are equally good in terms of their expected prediction error over all possible realizations of new test sets. 
+\item On the single test set that we observed, one of these models will ``win" due to random chance (i.e. it will have the lowest error on our observed test set).
+\item This test error is biased downwards for the expected test error of this model on a NEW test set. Selecting a winner caused us to overfit to our test set. 
+\item For an unbiased estimate of a selected model's performance on new, unseen data, we actually need three datasets: train / validation / test. We can select the model that achieves minimum error on the validation set, and only at the end do we evaluate the accuracy on the totally unseen test set. 	
+\end{itemize}
+The idea of the winner's curse is really important! Selected models tend to let us down in the future :(. Selected policies in government, econ, etc. tend to underperform in the future: they ``won" the first stage of selection partially due to random chance, and now they regress to their mean. This is important to be aware of, any time you are doing model selection!
+
+That's all about model selection for now! If you love model selection, consider a related topic for your final project! 
+
+\subsection{Intro to Ensemble Methods}
+
+Today, let's talk about a totally new and potentially crazy idea: if we only care about predictive accuracy, why do we need to select one model? Why can't we take a bunch of different models that all do pretty well, and average or combine their predictions somehow? 
+\begin{itemize}
+\item If the different models tend to make mistakes on slightly different types of datapoints, or if their mistakes are uncorrelated with one another, this could really help us! 
+\item We need to have room to improve; if we are already achieving essentially irreducible error, then this will not help.	
+\end{itemize}
+In other words: forget model selection. Let's use an \emph{ensemble model}, that combines the results of several models!
+
+You might be thinking that you are going to fit a KNN, a regression tree, and a lasso regression all to the same dataset, and then average the predictions from all of these different models. We could certainly do that! But, for now, let's not go too crazy with ensemble methods. Let's talk about two relatively simple methods for taking a single model fitting procedure and improving it by fitting it many times in a row. 
+
 \begin{itemize}
 \item The general idea of \emph{bagging} is to take one model that has high variance, and reduce the variance by averaging over several repeated copies of this model. We will talk about this today!
-\item The general idea of \emph{boosting} is to take one model that has high bias, and reduce the bias by iteratively focusing attention on the examples that we are currently messing up on. 	We will talk about this next time!
+\item The general idea of \emph{boosting} is to take one model that has high bias, and reduce the bias by iteratively focusing attention on the examples that we are currently messing up on. We will talk about this next time!
 \end{itemize}
 
-Let's consider a deep decision tree as our single learner. There is a fair amount that we like about a deep decision tree (it can uncover interaction terms, it has low bias). However, there is a thing that we do not like about this decision tree. Due to variance (and the particular instability of decision trees due to greedy search), we know that if we had observed a very slightly different training, we would have a totally different tree. This is bad! How do we know what tree will perform best on unseen examples?
+\subsection{Bagging (Breiman, 1996)}
 
-Well, here is a really simple idea that works well if we care about predictions. We can take fit $B$ different deep decision trees to $B$ different bootstrap samples of our dataset. Remember that, to get a bootstrap sample, we draw $n$ observations with replacement from our $n$ original training observations. 
+Suppose we have a single base learner, such as a single deep decision tree, that we could train to our entire dataset. Call this model $\hat{f}()$. There is a fair amount that we like about a deep decision tree (it can uncover interaction terms, it has low bias). However, there is a thing that we do not like about this decision tree. Due to the high variance of decision trees, we know that if we had observed a very slightly different training set, we would have a totally different tree. This high variance compromises our predictive accuracy! 
+
+Well, here is a really simple idea that works well if we care about predictions. We can take fit $B$ different deep decision trees to $B$ different bootstrap samples of our dataset. Remember that, to get a bootstrap sample, we draw $n$ observations with replacement from our $n$ original training observations. We now have $B$ different prediction models, $\hat{f}_b()$ for $b=1,\ldots,B$: each fit to $n$ observations. We let our final, bagged model (bagging stands for bootstrap aggregation), be:
+$$
+\hat{f}_{bag}(x) = \frac{1}{B} \sum_{b=1}^B \hat{f}_b(x). 
+$$
+
+And that's it! That is the entire idea of bagging!
+
+\subsection{Why does bagging reduce variance?}
+
+We know in statistics that averaging is a nice way of reducing variance. But also, bagging shouldn't be some magical way to make our model really good: taking $B$ bootstrap samples from our data doesn't actually increase the total amount of information in our data! So, what is going on and why does bagging work? 
+
+Let $Var(\hat{f}_{bag}(x))$ be the variance of a prediction for a single fixed test-point $x$. The randomness is taken over the training of $\hat{f}_{bag}()$ for many different training sets. Let $Var(\hat{f}(x)) = \sigma^2$. What is $Var(\hat{f}_{bag}(x))$? 
+
+Well, based on the form of $\hat{f}_{bag}(x)$, we have that:
+$$
+Var_{bag}\left(\hat{f}(x)\right) = Var\left(\frac{1}{B} \sum_{b=1}^B \hat{f}_b(x) 
+\right) = \frac{1}{B^2} \left( \sum_{b=1}^B Var(\hat{f}_b(x)) + \sum_{b=1}^B \sum_{b' != b} Cov(\hat{f}_b(x),\hat{f}_{b'}(x))\right).
+$$
+Note that, $\hat{f}_b(x)$ and  $\hat{f}_{b'}(x)$ are identically distributed random variables: they both result from applying the same procedure to a random subsample of the same data. Let $Var(\hat{f}_b(x)) = \sigma_b^2$ for any $b=1,\ldots,B$. Also, note that when $n$ is large, $\sigma_b^2$ should be the same as $\sigma^2$: fitting a model to the whole training set should be the same as fitting a model to a bootstrap sample from the whole dataset. Next, note that  $\hat{f}_b(x)$ and  $\hat{f}_{b'}(x)$ are not independent, because they are trained on overlapping subsamples of data. Let $Cov(\hat{f}_b(x),\hat{f}_{b'}(x)) = \rho \sigma_b^2$, where $\rho$ is the correlation induced by the overlapping data. Note that this value is the same for all $b,b'$ from $1$ to $B$. 
+
+So, 
+$$
+Var\left(\hat{f}_{bag}(x)\right) = \frac{1}{B^2} \left(B \sigma_b^2 + B \times (B-1) \rho \sigma_b^2 \right) = \frac{1}{B^2} \left(B \sigma_b^2 (1 - \rho) + B^2 \rho \sigma_b^2  \right)  = \frac{\sigma_b^2 (1 - \rho)}{B} + \rho \sigma_b^2.
+$$
+
+Suppose that we are working with a very stable model fitting procedure. In this case, there probably isn't much change from bootstrap sample to bootstrap sample. This means that there is a lot of correlation between $\hat{f}_b(x)$ and $\hat{f}_{b'}(x)$; $\rho \approx 1$. In this case: 
+$$
+Var\left(\hat{f}_{bag}(x)\right) \approx \frac{\sigma_b^2 (1 - \rho)}{B} + \rho \sigma_b^2 = \sigma_b^2 \approx \sigma^2. 
+$$
+Uh oh! This means that bagging did not help us reduce our variance! We did a lot of computational work to get the same variance that we would have had if we had fit just one model to our full dataset. The issue here is the stability-- when we get basically the same model from every bootstrap sample ($\rho \approx 1$), bagging really does not help us!
+
+On the other hand, suppose we have an unstable model, and $\rho$ is positive but less than 1\footnote{Negative $\rho$ would be quite strange, given that the bootstrap samples overlap significantly. I don't think that this would happen.}. In this case, especially if $B$ is large, the variance of our bagged model is smaller than the variance of our original model. The smaller that $\rho$ is, the better! 
+
+The fact that bagging reduces variance more for unstable models led Breiman, in his original bagging paper, to claim that bagging does not help with linear regression or ridge regression (stable) but helps with stepwise regression or trees (greedy and unstable). This is good to know!
+
+\subsection{Does bagging reduce bias?}
+
+The average of $B$ linear models is still a linear model. Thus, bagging a bunch of linear regressions does not do anything to the expressiveness of our model, and should not impact the bias. On the other hand, consider bagging shallow decision trees (1 split). Each individual tree is so limited in its complexity; but when we combine many together we get a much more complex additive model. In general, the average of $B$ trees cannot necessarily be written as a tree: so we have certainly increased our model space, and therefore can have reduced bias. 
+
+\subsection{Random forests (Breiman, 2001)}
+
+It was already the case that bagged trees were popular: trees are notoriously unstable so bagging will reduce their variance, and bagging can also reduce the bias of trees. However, in 2001, Breiman combined some existing ideas to make an even better algorithm: random forests!
+
+A forest is an ensemble of trees. Each tree is fit to a bootstrap sample of the data, but also has additional variance added in. 
+
+The idea is simple: we can make the variance-reduction of bagging even better by further de-correlating the trees? Or, in other words, by making the individual trees even less stable? 
+
+In random forests, we do this by not considering all possible variables in every tree. For each tree in the forest, we only allow ourselves to choose from $m \leq p$ possible variables, instead of considering all $p$ variables. This makes the trees more different from one another (smaller $\rho$), and so helps further reduce variance (although, now it is the case that $Var(\hat{f}_b(x)) > Var(\hat{f}(x))$: an individual tree in the forest has extra noise added compared to a single tree fit to all of the data with all of the variables).  
+
+This can also help us with bias. Recall that, due to the greedy nature of a tree, a tree could miss out on potentially important variables or interactions if the greedy process leads it to go down a certain initial path (dominated by one important variable) while missing other paths. Randomization helps the tree explore all paths and find all possible signal or interactions. This can be really helpful- it seems to work really well on real data.
+
+\subsection{More details about random forests}
+
+\subsubsection{Tuning?}
+
+There are rules of thumb for how to pick $m$: but in reality, I think it depends on our data and we should likely tune $m$ (Varya and I discovered this yesterday!). This can really matter. If you don't have instability or competing variables or complex interactions that are hard to find, setting $m << p$ can just make each tree in your forest a lot more biased (miss out on the important signal). We wouldn't want that!
+
+Besides $m$, the other parameters to tune are: how many nodes should go in each individual tree inside of the forest, and how many trees should be in the forest? 
+
+Conventional wisdom says that it is okay to build deep trees (high variance!) inside of the forest, because we do not care about interpretability and because bagging will help us reduce the variance. Conventional wisdom also says that you might as well make $B$ big if your computational power allows you to. Increasing $B$ ``too much" wastes computation, but cannot cause us to overfit, because it does not cause the model to become more complex, it just causes us to converge to an average. We can keep adding trees to the forest until our OOB error (below) stops improving. 
+
+\subsubsection{OOB error evaluation}
+
+To tune a random forest, we don't actually need to do cross-validation. This is because there is already some sample-splitting going on during tree-building! 
+
+Each tree in the forest is build to a bootstrap sample of the data. This bootstrap sample tends to have around 2/3 of the observations ``in the bag" and around 1/3 of the observations ``out of the bag". We can compute the MSE for this tree for these ``out of the bag" data points! More generally, for any data-point, we can get a current ``test error" by getting its prediction from the forest using only the trees for which it was out of the bag. This is nice- this MSE is not affected by overfitting. 
+
+We can keep adding trees to our forest until the OOB error stops improving. This will be when we have more trees than necessary: since the OOB MSE doesn't get to use as many trees per datapoint to get predictions as we would use for new data. But its still a useful metric that can tell us when we clearly don't need more trees. 
+
+And this lets us tune $m$ without refitting the forest over different folds of cross validation, which is nice!
+
+\subsubsection{Permutation importance}
+
+While random forests provide a clear way to improve on the predictive accuracy of a single tree, they also lose one of the main benefits of trees: interpretability. However, as we discussed, should we really call an unstable model (a single tree) interpretable? If you would like to use a random forest but would also like to know about which variables are important to your model, people have developed a variety of simple \emph{explainability} techniques that try to get at this. One of them is permutation importance, which is built into the random forest R package. We will cover this next Thursday, on interpretability day!
+
+
+\subsection{A discussion: let's go back to no-free-lunch}
+
+Varya was working on an RDemo for you all that was supposed to show that a random forest outperformed bagging! However, with either simulated data or fairly simple real datasets, she was having trouble showing this result! Often, bagging (use all features) was still beating random forests! After looking through her code and trying to debug it (there were no bugs), I came to some conclusions. 
+
+\begin{itemize}
+\item Just because your textbook says that random forests should outperform bagging doesn't mean they will on simple datasets: there is no free lunch! The randomization idea really needs like ``room for improvement" and tricky-to-find effects with LOTs of important variables to really work well. I think that REAL datasets tend to be really complex which is why people claim random forests work so well off the shelf. But, for Varya and I yesterday, regular bagging was working better than random forests. 
+\item We can avoid this situation by tuning the ``m`` parameter. When $m=p$, we just have bagging! And this isn't too hard! So random forests are still pretty easy to use! But not 100\% off the shelf.
+\item Don't just blindly trust what a textbook says! Everything depends on your data!
+\end{itemize}
+
+
 
 
 
