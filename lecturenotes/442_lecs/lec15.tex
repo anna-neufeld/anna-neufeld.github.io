@@ -119,8 +119,9 @@ While random forests provide a clear way to improve on the predictive accuracy o
 Varya was working on an RDemo for you all that was supposed to show that a random forest outperformed bagging! However, with either simulated data or fairly simple real datasets, she was having trouble showing this result! Often, bagging (use all features) was still beating random forests! After looking through her code and trying to debug it (there were no bugs), I came to some conclusions. 
 
 \begin{itemize}
-\item Just because your textbook says that random forests should outperform bagging doesn't mean they will on simple datasets: there is no free lunch! The randomization idea really needs like ``room for improvement" and tricky-to-find effects with LOTs of important variables to really work well. I think that REAL datasets tend to be really complex which is why people claim random forests work so well off the shelf. But, for Varya and I yesterday, regular bagging was working better than random forests. 
-\item We can avoid this situation by tuning the ``m`` parameter. When $m=p$, we just have bagging! And this isn't too hard! So random forests are still pretty easy to use! But not 100\% off the shelf.
+\item Just because your textbook says that random forests should outperform bagging doesn't mean they will on simple datasets: there is no free lunch! No algorithm outperforms all other algorithms on all datasets! 
+\item The randomization idea really needs like ``room for improvement" and tricky-to-find effects with LOTs of important variables to really work well. I think that REAL datasets tend to be really complex which is why people claim random forests work so well off the shelf for real data. But, for Varya and I yesterday, regular bagging was working better than random forests. 
+\item We can avoid this situation by tuning the ``m" parameter. When $m=p$, we just have bagging! And this isn't too hard! So random forests are still pretty easy to use! But not 100\% off the shelf- you should tune $m$. When your data is not super complex, you probably want $m=p$. Setting $m < p$ makes the bias and variance worse for every individual tree: so unless you are really gaining something from this when you average, you probably don't want to do it!
 \item Don't just blindly trust what a textbook says! Everything depends on your data!
 \end{itemize}
 
