@@ -1,6 +1,9 @@
 \section{Monday, April 14: Boosting}
 
-Last time, we defined \emph{ensemble methods}. We then talked more specifically about bagging, which is a general-purpose technique that is designed to take a single model with low bias but high variance (e.g. deep decision tree) and reduce the variance through averaging. Today, we will talk about boosting, which is a general-purpose technique that is designed to take a single ``weak learner" with low variance but high bias and adaptively improve it until it becomes a ``strong learner". Today is another day where we will get to learn about how really key innovations came from both computer scientists and statisticians at around the same time, and then were combined to make something even better!
+Last time, we defined \emph{ensemble methods}. We then talked more specifically about bagging, which is a general-purpose technique that is designed to take a single model with low bias but high variance (e.g. deep decision tree) and reduce the variance through averaging. Today, we will talk about boosting, which is a general-purpose technique that is designed to take a single ``weak learner" with low variance but high bias and adaptively improve it until it becomes a ``strong learner". 
+
+A cool thing about boosting is that there were really key innovations from both computer scientists and statisticians at around the same time, and the innovations got combined to make something really powerful! This perhaps shows that the ``two cultures" discussed by Breiman aren't really at odds with one another: they compliment one another! 
+
 
 \subsection{AdaBoost (Freund and Schapire, 1996}
 
@@ -57,16 +60,13 @@ We need to talk about exactly what is going on in each step. Even though boostin
 \begin{itemize}
 \item By design, AdaBoost definitely continually reduces training error. If each $\hat{f}_t(x)$ is a bit better than random guessing on the training set, the more of these that we combine the better that we do. Our training error should actually go to $0$ if $T$ is big enough. This property holds for binary classification where we start with anything better than random guessing: but might not be practically super interesting because this says nothing about test error. 
 \item People were at first worried that AdaBoost would certainly overfit if $T$ is too big. Remember that on midterm 3 you derived a formula that said that the difference between the training error and the expected test error depends on the degrees of freedom of an algorithm. Working with a similar concept, people showed that an upper bound on the difference between the training error and the expected test error for AdaBoost grows with $T$. However, in practice, it seems like we don't hit this upper bound. In practice, AdaBoost can work pretty well, even when $T$ is so big that the training error is $0$. 
-\item What is going on?!?!?! Why aren't we overfitting at the point of $0$ training data? 
-\item Even after AdaBoost has reached a point of $0$ training error, we can keep iterating and keep re-fitting with new weights. The consequence of this tends to be that we increase our margin of confidence for our classification: much like an SVM! We know from SVMs that increasing the margin can be GOOD for generalization error. So ... that's cool! Whether or not extra iterations will increase the margin or overfit to noise depends on the signal to noise ratio in your data. 
-\item AdaBoost can certainly overfit. But ... each of the individual learners is weak, and we don't let ourselves make a prediction unless the majority of a diverse set of learners agrees. So ... it doesn't overfit that quickly or that badly. 
+\item What is going on?!?!?! When we have a training error of $0$, aren't we overfitting? Why would we keep increasing $T$ past this point? 
+\item Even after AdaBoost has reached a point of $0$ training error, we can keep iterating and keep re-fitting with new weights. The consequence of this tends to be that we increase our margin of confidence for our classification: much like an SVM! We know from SVMs that increasing the margin can be good for generalization error; we get more confident in our predictions. So ... that's cool! Whether or not extra iterations will increase the margin or overfit to noise depends on the signal to noise ratio in your data. 
 \item Freund and Schapire certainly note that, while AdaBoost can work really well off-the-shelf with some nice properties, it is clearly dependent on the data and the weak learner. It can fail, and is particularly susceptible to noise. 
 \end{itemize}
 
 
-A note on statistics vs. computer science culture. As you know from Breiman, statistics literature often starts by assuming a data-generating mechanism for the data. On the other hand, a lot of computer science machine learning literature starts from a ``no-noise" setting, where we are really doing like pattern-recognition, not statistics. Boosting (like SVMs) was first studied by people in the no-noise setting! Overfitting is of course less of an issue here-- bias is way more of an issue! This colored some early bagging vs. boosting comparisons. It was found that bagging worked better in situations with noise: boosting works well in low-noise settings where overfitting is not really a concern. You can see the Dietterich paper on GLOW to read one of these comparisons!
-
-
+A note on statistics vs. computer science culture. As you know from Breiman, statistics literature often starts by assuming a data-generating mechanism for the data. On the other hand, a lot of computer science machine learning literature starts from a ``no-noise" setting, where we are really doing like pattern-recognition, not statistics. Boosting (like SVMs) was first studied by people in the no-noise setting! In a no-noise setting, over-fitting is less of an issue. This difference colored some early comparisons of bagging vs. boosting. In the Dietterich paper that I posted on GLOW, you can see that he finds that bagged trees outperform boosted trees in high-noise settings. 
 
 \subsubsection{Comparison to Bagging}
 

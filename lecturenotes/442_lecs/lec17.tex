@@ -1,3 +1,4 @@
+\newpage
 \section{Thursday, April 17: Explainability vs. Interpretability!}
 
 We are going to spend some time today covering the boosting content that we missed. We are also going to have a short discussion of the ``two cultures" reading. Thus, we won't have time to cover too much new content today. 
@@ -10,6 +11,8 @@ Today, let's assume that our primary goal is to learn something about the world.
 \item We can fit an \textbf{interpretable} model, otherwise known as a \emph{glass box}. Examples include simple or sparse linear models, or small decision trees. With these models, we know exactly what variables are playing a role in our predictions, which presumably helps us understand the world.
 \item We can fit a \emph{black-box} model, but then \textbf{explain} this model after the fact using a separate algorithm. This is the huge and growing field known as explainable AI. The only example we have mentioned so far of an explainability technique is permutation importance for random forests (this was also in your Breiman reading). But we haven't yet done this topic justice!
 \end{itemize}
+
+One theme of today is that this dichotomy is kind of useful, but that its also really tricky do define these things. What is interpretable depends on your audience! And what you are trying to convey!
 
 Today, I want to just briefly touch on possible explainability techniques for determining important variables. They are both very simple, and pretty general-purpose with a lot of room for tweaks. There are many versions of these out there: I am presenting really simple versions. We will use this just to have a language for discussing interpretability vs. explainability! 
 
@@ -31,8 +34,9 @@ This idea is really simple, and is effective in telling us which variables are c
 
 Imagine that $x_j$ and $x_k$ are extremely highly correlated, and both associated with $y$. But imagine that our model decides to only use $x_k$ for its predictions. Well, then according to permutation importance, $x_j$ is not important at all. But that doesn't mean it is not associated with $y$- it is just being masked by $x_k$. 
 
-So ... this leaves something to be desired. Note that glass-box models have this issue too though: this just means that attribution is really hard, not that permutation importance has this unique failing.
+This gets at a particular definition of importance: a variable is not important if we can make good predictions without this variable. The thing that it does not take into account is the fact that maybe, without this covariate, we would have fit a different model! This is something that the next method tries to address. 
 
+Note that glass-box models have this issue too though: this just means that attribution is really hard. A linear regression cannot always tell which of two correlated predictors is important! So, this isn't a unique failing of permutation importance; just something to point out!
 
 \subsection{Leave one out importance (with retraining)}
 
@@ -55,20 +59,17 @@ This again is something that can happen in interpretable models too! If we inclu
 
 \subsection{Model distillation (student/teacher methods)}
 
-(fill in)
-
+The idea of model distillation is to first train a black box that achieves high classification accuracy. This is the ``teacher" model. The next idea is to take the predicted values from this model, which may be probabilities instead of hard classifications, and try to predict these using the covariates using a simple, glass-box like a tree. The idea is that maybe a tree would not originally have done very well on this data. But we have now distilled the response variable into pieces that can be explained by the covariates, and we are giving the tree hints about which observations we are more or less confident about. So now all of the sudden, the tree can do better at explaining these predictions than it could have done at predicting the original classes. Huh! Cool! I would like to learn more about this some day!
 
 \subsection{Other explainability methods?}
 
 There are many other methods that Lucy or our guest speaker next week might tell us about! And I will try to post some additional readings! This could probably be an entire class, so it was hard to know what to focus on!
 
-
-
 \subsection{Do we want interpretability? Or is explainability enough?}
 
 \subsubsection{Some arguments for interpretability}
 
-See Rudin paper. 
+A quote that I love from the Sankaran reading posted on GLOW is that an interpretable model supplements human decision-making, rather than replacing it. And this is how we want to be using our models! Cynthia Rudin, in reading that you will do for HW7, implies that explanations are not always true to what the model is actually doing, and can get us into trouble. If we really truly want transparency, then interpretable models might be the way to go. 
 
 \subsubsection{Some arguments for explainability}
 
@@ -80,7 +81,7 @@ Overall, we like that we can see into glass boxes. But, if the glass boxes don't
 
 \subsubsection{More coming!}
 
-I will put a reading on HW7 where you read about someone who really thinks we ought to be using interpretable models, not explaining black boxes. But also, in your guest lecture next Thursday, you will learn a bit more about explainability! So these topics are not going away, this is just your intro!
+The reading you do for HW7, as well as the guest lecture next Thursday, should help reinforce these concepts!
 
 
 

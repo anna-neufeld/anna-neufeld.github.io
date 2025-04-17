@@ -1,69 +1,8 @@
-\section{Thursday, April 17: Interpretability}
+\section{Monday, April 21: Inference}
 
-We have been talking for weeks about how interpretability is something that we value! Why? Because if we are going to make sure that our model doesn't do something super unexpected or unfair in real world applications, we probably want to know what is happening inside of the model. Where are the predictions coming from? 
-
-Okay, but what do we actually MEAN by interpretable? prevent oversummarization and can
-highlight details for follow-up study. Similarly, an interpretable model can be broken down into
-relevant components, each of which can be assigned meaning. Instead of information density
-(showing more of the data), interpretability relies on faithfulness (showing more of the model).
+\begin{itemize}
+\item Parameter intervals vs. prediction intervals: which is ``easier"?
+\item Conformal inference: a generic approach for black box prediction intervals. 
+\end{itemize}
 
 
-nterpretability must be tailored
-to an audience and the problems they need solved (Lipton, 2018). There are different levels of
-data literacy, and visual representations may be familiar to some audiences but not others.support the transition from automated to augmented decision-making (Heer, 2019), enhancing
-rather than substituting human reason. I LOVE THIS POINT. 
-
-NO BLANKET STATEMENTS ARE POSSIBLE. discussions of interpretability can go beyond dichotomies about models being either glass or black
-boxes.
-
-\textbf{One thing we should talk about today: Interpretable vs. Explainable.}
-
-INTERPRETABLE. Sparse linear model. Glass Box. 
-
-EXPLAINABLE: something like a partial 
-
- First,
-consider intrinsically interpretable models. When we call a linear model interpretable, we are
-invoking parsimony and simulatability. Parsimony means that predictions can be traced back to
-a few model components, each of which comes with a simple story attached. For example, sparse
-linear models have few nonzero coefficients, and the relationship between each coefficient and the
-output can be concisely described. A similar principle applies to generalized additive modeling,
-which have few allowable interactions (Caruana et al., 2015), or in latent variable models, which
-have few underlying factors (Sankaran and Holmes, 2023). Simulatability formalizes the idea that
-predictions can be manually reconstructed from model descriptions. For example, in decision trees
-and falling rules lists, this can be done by answering a sequence of yes-no questions. Finally, since
-interpretation requires human interaction, it can be affected by the gulfs of interaction (Hutchins
-et al., 1985). Ideally, an interpretability method should allow users to quickly query properties
-of the underlying model. Further, the method’s outputs should be immediately relevant to the
-query, requiring no further cognitive processing. To the extent that a method has reached these
-two ideals, it has reduced the gulfs of execution and evaluation, respectivel
-
-
-BUT.. its not so simple. A lineart model is interpretable only if sparse. A ndecision tree is interpretable only if small. 
-
-LOCAL vs. GLOBAL. KNN has a LOCAL interprettation. Here is why YOUR prediction got made. But nothing global. Global = overall affect of a variable. 
-
-Sensitivity: what happens when I tweak this? 
-
-We can often learn salient, non-obvious characteristics of the data by applying a intrinsically
-interpretable model. Some have argued that with sufficient ingenuity, such models can rival the
-accuracy and efficiency of any black box (Rudin, 2019). Even otherwise, the results of intrinsically
-interpretable analyses can guide the application of more sophisticated models later on.
-
-
-Sparse and tree-based models are the foundation for many proposals for interpretable machine
-learning (Xin et al., 2022; Zhong et al., 2023). 
-
-For example, Zeng et al. (2016) introduced fast
-decision trees that match black box models in recidivism prediction, a domain with significant
-moral ramifications where interpretability is crucial. Similarly, Hazimeh et al. (2020) designed a
-decision tree variant that competes effectively with deep learning in various operations research
-tasks. By leveraging advances in combinatorial optimization, their approach allows interpretable
-trees to be learned from very large datasets without excessive compute demands
-
-The parsimony of these estimates aligns with our discussion of the characteristics of intrinsically interpretable models. In both approaches, prediction relies only on a small subset of the
-original inputs. But how much can we trust these features? Fig 2e - f shows the estimated βˆ
-for nonzero features obtained from separately fitting the sparse logistic regression approaches
-on independent splits. When using concatenated inputs, only two features overlap, while with
-summary statistics, this increases to 18. Therefore, while the model on raw time points may be
-more parsimonious, it is less stable.
