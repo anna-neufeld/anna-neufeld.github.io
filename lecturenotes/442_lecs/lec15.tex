@@ -1,3 +1,4 @@
+\newpage
 \section{Thursday, April 10: Bagging and Random Forests}
 
 \subsection{Model selection recap}
@@ -69,35 +70,44 @@ Var\left(\hat{f}_{bag}(x)\right) \approx \frac{\sigma_b^2 (1 - \rho)}{B} + \rho 
 $$
 Uh oh! This means that bagging did not help us reduce our variance! We did a lot of computational work to get the same variance that we would have had if we had fit just one model to our full dataset. The issue here is the stability-- when we get basically the same model from every bootstrap sample ($\rho \approx 1$), bagging really does not help us!
 
-On the other hand, suppose we have an unstable model, and $\rho$ is positive but less than 1\footnote{Negative $\rho$ would be quite strange, given that the bootstrap samples overlap significantly. I don't think that this would happen.}. In this case, especially if $B$ is large, the variance of our bagged model is smaller than the variance of our original model. The smaller that $\rho$ is, the better! 
+On the other hand, suppose we have an unstable model, and $\rho$ is positive but less than 1\footnote{Negative $\rho$ would be quite strange, given that the bootstrap samples overlap significantly. I don't think that this would happen.}. In this case, especially if $B$ is large, the variance of our bagged model is smaller than the variance of an individual bootstrap-sample model: $\hat{f}_b(x)$, which is similar in large samples to the variance of our single model applied to the whole dataset: $\hat{f}(x)$. The smaller that $\rho$ is, the better! 
 
 The fact that bagging reduces variance more for unstable models led Breiman, in his original bagging paper, to claim that bagging does not help with linear regression or ridge regression (stable) but helps with stepwise regression or trees (greedy and unstable). This is good to know!
 
 \subsection{Does bagging reduce bias?}
 
-The average of $B$ linear models is still a linear model. Thus, bagging a bunch of linear regressions does not do anything to the expressiveness of our model, and should not impact the bias. On the other hand, consider bagging shallow decision trees (1 split). Each individual tree is so limited in its complexity; but when we combine many together we get a much more complex additive model. In general, the average of $B$ trees cannot necessarily be written as a tree: so we have certainly increased our model space, and therefore can have reduced bias. 
+The average of $B$ linear models is still a linear model. Thus, bagging a bunch of linear regressions does not do anything to the expressiveness of our model, and does not impact the bias. On the other hand, consider bagging shallow decision trees (1 split). Each individual tree is so limited in its complexity; but when we combine many together we get a much more complex additive model. One one-level decision tree gets to use only one variable, whereas a bagged ensemble can take into account many variables. In general, the average of $B$ trees cannot necessarily be written as a tree: so we have increased our model space, and therefore may have reduced bias.  
 
 \subsection{Random forests (Breiman, 2001)}
 
-It was already the case that bagged trees were popular: trees are notoriously unstable so bagging will reduce their variance, and bagging can also reduce the bias of trees. However, in 2001, Breiman combined some existing ideas to make an even better algorithm: random forests!
+Before 2001, bagged regression trees were already very popular. Trees are a popular learning algorithm; people like that they can uncover interactions without needing to pre-specify them. However, trees are also notoriously unstable. This makes them a prime candidate to benefit from bagging. 
 
-A forest is an ensemble of trees. Each tree is fit to a bootstrap sample of the data, but also has additional variance added in. 
+However, in 2001, Breiman combined some existing ideas to make an algorithm that (often) works even better than a bagged ensemble of trees. The idea is simple: we can make the variance reduction of bagging even better by further de-correlating the trees in our ensemble of bagged trees? Or, in other words, by making the individual trees even less stable? 
 
-The idea is simple: we can make the variance-reduction of bagging even better by further de-correlating the trees? Or, in other words, by making the individual trees even less stable? 
-
-In random forests, we do this by not considering all possible variables in every tree. For each tree in the forest, we only allow ourselves to choose from $m \leq p$ possible variables, instead of considering all $p$ variables. This makes the trees more different from one another (smaller $\rho$), and so helps further reduce variance (although, now it is the case that $Var(\hat{f}_b(x)) > Var(\hat{f}(x))$: an individual tree in the forest has extra noise added compared to a single tree fit to all of the data with all of the variables).  
-
-This can also help us with bias. Recall that, due to the greedy nature of a tree, a tree could miss out on potentially important variables or interactions if the greedy process leads it to go down a certain initial path (dominated by one important variable) while missing other paths. Randomization helps the tree explore all paths and find all possible signal or interactions. This can be really helpful- it seems to work really well on real data.
+In random forests, we do exactly this. We add additional randomness to every individual tree in an ensemble of bagged trees.
+\begin{itemize}
+\item Recall that, to build a CART regression tree, we greedily select the variable and split point that most improves the goodness of fit of our tree right now. We repeat this process recursively; we keep making new splits by picking the best possible variable. 
+\item For each individual CART tree in a random forest, we make a small modification. At each split, we only allow ourselves to consider a random selection of $m \leq p$ variables as the possible split variables. Thus, we may not choose the overall best split variable right now; we might need to choose something else if the ``best" variable is not randomly selected. 
+\item This makes the individual trees in the forest more different from one another (smaller $\rho$). While it may seem from the derivation above that this \emph{definitely} helps reduce the variance of the bagged ensemble, we need to remember that this also makes   $Var(\hat{f}_b(x)) > Var(\hat{f}(x))$: an individual tree in the forest has extra noise added compared to a single tree fit to all of the data with all of the variables. However, the gain that comes from the de-correlation tends to help.
+\item This can also help us with bias. Recall that, due to the greedy nature of a tree, a tree could miss out on potentially important variables or interactions if the greedy process leads it to go down a certain initial path (dominated by one important variable) while missing other paths. Randomization helps the tree explore all paths and find all possible signal or interactions. This can be really helpful- it seems to work really well on real data. 
+\item Of course, selecting a small value of $m$ could also be bad for bias. If there are only a few truly important predictors and we select a small value of $m$, for many trees in our forest these important predictors will be left out. This is too bad-- it will cause us to miss out on true signal!
+\item In the case of many correlated predictors, a random forests helps us explore different choices of correlated predictors in different trees. This can be helpful. 
+\end{itemize}
 
 \subsection{More details about random forests}
 
 \subsubsection{Tuning?}
 
-There are rules of thumb for how to pick $m$: but in reality, I think it depends on our data and we should likely tune $m$ (Varya and I discovered this yesterday!). This can really matter. If you don't have instability or competing variables or complex interactions that are hard to find, setting $m << p$ can just make each tree in your forest a lot more biased (miss out on the important signal). We wouldn't want that!
+In a random forest, we need to choose:
+\begin{itemize}
+\item How many trees $(B)$ should go in the forest?
+\item How deep should each tree in the forest be?
+\item How many variables $m$ should be considered for each split?	
+\end{itemize}
 
-Besides $m$, the other parameters to tune are: how many nodes should go in each individual tree inside of the forest, and how many trees should be in the forest? 
+Conventional wisdom says that it is okay to build deep trees (high variance!) inside of the forest, because we do not care about interpretability and because bagging will help us reduce the variance. Conventional wisdom also says that you might as well make $B$ big if your computational power allows you to. Increasing $B$ ``too much" wastes computation, but cannot cause us to overfit, because it does not cause the model to become more complex, it just causes us to converge to an average. We can keep adding trees to the forest until our OOB error (see below) stops improving. 
 
-Conventional wisdom says that it is okay to build deep trees (high variance!) inside of the forest, because we do not care about interpretability and because bagging will help us reduce the variance. Conventional wisdom also says that you might as well make $B$ big if your computational power allows you to. Increasing $B$ ``too much" wastes computation, but cannot cause us to overfit, because it does not cause the model to become more complex, it just causes us to converge to an average. We can keep adding trees to the forest until our OOB error (below) stops improving. 
+The hardest variable to tune is $m$. While some ``rule of thumb" out there says to select $m = \sqrt{p}$, there are definitely situations out there for which $m=p$ (no extra randomization) is optimal. The RandomForest package in R has a built-in mechanism for tuning $m$: it seems really important to check this for your dataset. 
 
 \subsubsection{OOB error evaluation}
 
@@ -106,8 +116,6 @@ To tune a random forest, we don't actually need to do cross-validation. This is 
 Each tree in the forest is build to a bootstrap sample of the data. This bootstrap sample tends to have around 2/3 of the observations ``in the bag" and around 1/3 of the observations ``out of the bag". We can compute the MSE for this tree for these ``out of the bag" data points! More generally, for any data-point, we can get a current ``test error" by getting its prediction from the forest using only the trees for which it was out of the bag. This is nice- this MSE is not affected by overfitting. 
 
 We can keep adding trees to our forest until the OOB error stops improving. This will be when we have more trees than necessary: since the OOB MSE doesn't get to use as many trees per datapoint to get predictions as we would use for new data. But its still a useful metric that can tell us when we clearly don't need more trees. 
-
-And this lets us tune $m$ without refitting the forest over different folds of cross validation, which is nice!
 
 \subsubsection{Permutation importance}
 
@@ -120,8 +128,9 @@ Varya was working on an RDemo for you all that was supposed to show that a rando
 
 \begin{itemize}
 \item Just because your textbook says that random forests should outperform bagging doesn't mean they will on simple datasets: there is no free lunch! No algorithm outperforms all other algorithms on all datasets! 
-\item The randomization idea really needs like ``room for improvement" and tricky-to-find effects with LOTs of important variables to really work well. I think that REAL datasets tend to be really complex which is why people claim random forests work so well off the shelf for real data. But, for Varya and I yesterday, regular bagging was working better than random forests. 
-\item We can avoid this situation by tuning the ``m" parameter. When $m=p$, we just have bagging! And this isn't too hard! So random forests are still pretty easy to use! But not 100\% off the shelf- you should tune $m$. When your data is not super complex, you probably want $m=p$. Setting $m < p$ makes the bias and variance worse for every individual tree: so unless you are really gaining something from this when you average, you probably don't want to do it!
+\item For the randomization idea to be useful, there needs to be ``room for improvement". For example, if your data has tricky-to-find effects with lots of important variables, then the extra randomization might really diversify the trees in your forest and really help. Real datasets tend to be super complex, which is likely why people claim random forests work so well in the real world. 
+\item When your data is not super complex, you probably want $m=p$. Setting $m < p$ makes the bias and variance worse for every individual tree: so unless you are really gaining something from this when you average, you probably don't want to do it!
+\item In practice, since there is no free lunch, it is always important to tune your models! Nothing is REALLY ``off the shelf". 
 \item Don't just blindly trust what a textbook says! Everything depends on your data!
 \end{itemize}
 

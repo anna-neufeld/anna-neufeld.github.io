@@ -1,0 +1,86 @@
+\section{Thursday, April 17: Explainability vs. Interpretability!}
+
+We are going to spend some time today covering the boosting content that we missed. We are also going to have a short discussion of the ``two cultures" reading. Thus, we won't have time to cover too much new content today. 
+
+For the last few classes, we have thrown interpretation to the wind. We have talked about selecting models based on predictive accuracy, and we have talked about ensembles, which are certainly hard to interpret. We have been imagining for the last few classes that our primary goal is predictive accuracy.
+
+Today, let's assume that our primary goal is to learn something about the world. We don't need to make predictions for a new, unseen dataset. We need to understand the data that is in front of us! There are actually two ways that we could accomplish this goal. 
+
+\begin{itemize}
+\item We can fit an \textbf{interpretable} model, otherwise known as a \emph{glass box}. Examples include simple or sparse linear models, or small decision trees. With these models, we know exactly what variables are playing a role in our predictions, which presumably helps us understand the world.
+\item We can fit a \emph{black-box} model, but then \textbf{explain} this model after the fact using a separate algorithm. This is the huge and growing field known as explainable AI. The only example we have mentioned so far of an explainability technique is permutation importance for random forests (this was also in your Breiman reading). But we haven't yet done this topic justice!
+\end{itemize}
+
+Today, I want to just briefly touch on possible explainability techniques for determining important variables. They are both very simple, and pretty general-purpose with a lot of room for tweaks. There are many versions of these out there: I am presenting really simple versions. We will use this just to have a language for discussing interpretability vs. explainability! 
+
+\subsection{Permutation importance (no retraining)}
+
+The idea is to figure out what variables are most contributing to your predictions in a given black-box model.
+
+\begin{itemize}
+\item Fit a model $\hat{f}()$ to predict $y$ using a training set. Measure the loss on a test set: i.e. compare $\hat{f}(x^{test})$ and $y^{test}$.
+\item For variables $j=1,\ldots,p$:
+\begin{itemize}
+\item Randomly permute the values of variable $j$ in the test set to get $\tilde{x}^{test}$.
+\item Measure the loss between $\hat{f}(\tilde{x}^{test})$ and $y^{test}$. 
+\item The increase in loss from permuting the $j$th variable is the importance of the $j$th variable. 
+\end{itemize}
+\end{itemize}
+
+This idea is really simple, and is effective in telling us which variables are contributing to our predictions. But, it has a lot of problems if we try to interpret it as a measure of the association between variable $j$ and $y$.
+
+Imagine that $x_j$ and $x_k$ are extremely highly correlated, and both associated with $y$. But imagine that our model decides to only use $x_k$ for its predictions. Well, then according to permutation importance, $x_j$ is not important at all. But that doesn't mean it is not associated with $y$- it is just being masked by $x_k$. 
+
+So ... this leaves something to be desired. Note that glass-box models have this issue too though: this just means that attribution is really hard, not that permutation importance has this unique failing.
+
+
+\subsection{Leave one out importance (with retraining)}
+
+This one is actually even more strange! The idea is subtly different, and this is much more computationally expensive than the idea above.
+
+\begin{itemize}
+\item Fit a model $\hat{f}()$ to predict $y$ using a training set. Measure the loss on a test set: i.e. compare $\hat{f}(x^{test})$ and $y^{test}$.
+\item For variables $j=1,\ldots,p$:
+\begin{itemize}
+\item Leave variable $j$ out of the training set to get $x^{train}_{-j}$.
+\item Refit the model on the training set. Now you have $\hat{f}_{-j}()$. 
+\item Measure the loss between $\hat{{f}}_{-j}({x}^{test}_{-j})$ and $y^{test}$. 
+\item The increase in loss from removing the $j$th variable is the importance of the $j$th variable. 
+\end{itemize}
+\end{itemize}
+
+In some ways, this feels more thorough to me. But in the case where $x_j$ and $x_k$ are extremely highly correlated, and both associated with $y$, I think we get even worse results. In the previous example, at least $x_k$ would have popped up as important. Here, when $j$ is left out, $k$ can absorb its effect. But when $k$ is left out, $j$ can absorb its effect. So we might end up reporting neither of these as important! This is not desirable! 
+
+This again is something that can happen in interpretable models too! If we include $x_j$ and $x_k$ both in a regression in this setting, the variance inflation factors that come from their correlation could lead us to report neither as significant. 
+
+\subsection{Model distillation (student/teacher methods)}
+
+(fill in)
+
+
+\subsection{Other explainability methods?}
+
+There are many other methods that Lucy or our guest speaker next week might tell us about! And I will try to post some additional readings! This could probably be an entire class, so it was hard to know what to focus on!
+
+
+
+\subsection{Do we want interpretability? Or is explainability enough?}
+
+\subsubsection{Some arguments for interpretability}
+
+See Rudin paper. 
+
+\subsubsection{Some arguments for explainability}
+
+Breiman strongly makes the point that models that are simple enough to be interpretable are often less accurate. He says that this is bad, because we only want to learn about the world from a model that is accurate enough to explain the world. I actually have some sympathy for this viewpoint: can we really learn something trustworthy about the world from a model with really low predictive accuracy? I am not sure! The economists would say yes!
+
+A point that I take more seriously is the point about stability. We love trees because they are supposedly interpretable. But, we also know that a tiny perturbation to a training set could cause a tree to look totally different and have totally different variables at the topmost splits. Should we really be interpreting something so unstable? With this in mind, fitting many trees to bagged samples and recording which variables get selected over and over again suddenly seems a lot more appealing as a measure of variable importance.
+
+Overall, we like that we can see into glass boxes. But, if the glass boxes don't work well or are not stable, why do we care? I think these are reasonable points!
+
+\subsubsection{More coming!}
+
+I will put a reading on HW7 where you read about someone who really thinks we ought to be using interpretable models, not explaining black boxes. But also, in your guest lecture next Thursday, you will learn a bit more about explainability! So these topics are not going away, this is just your intro!
+
+
+

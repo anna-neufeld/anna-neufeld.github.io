@@ -16,8 +16,8 @@ The idea was to wonder: is it possible to take a weak learner or a base learner 
 \item Start with training set $(x_1,y_1),\ldots,(x_n,y_n)$, where all weights are $w_1(i) = 1/n$ for $i=1,\ldots,n$.
 \item For $t=1,\ldots,T$:
 \begin{enumerate}
-\item Take a sample of size $n$ from the empirical distribution on the dataset with weights $w_1,\ldots,w_n$.\footnote{In round 1, this is just a bootstrap sample. But this will change later!} If our weak learner allows the use of ``weights", we can also skip this step and go right to step 2. 
-\item Train the weak learner on the subsampled or weighted dataset, $\hat{f}_t(x)$. Compute its training error, $e_t$, on the weighted or subsampled dataset. 
+\item Take a random sample of size $n$, with replacement, from the training dataset, where datapoint $i$s probability of being selected is its current weight $w_i$.\footnote{In round 1, this is just a bootstrap sample. But this will change later!} If our weak learner allows the use of ``weights", we can also skip this step and go right to step 2, but run the algorithm on the weighted data.
+\item Train the weak learner on the subsampled or weighted dataset. This yields $\hat{f}_t(x)$. Compute its training error, $e_t$, on the weighted or subsampled dataset. 
 \item Let $\alpha_t = \frac{1}{2} \log\left( \frac{1- e_t}{e_t} \right)$. 
 \item Update the weights! Let:
 $$
@@ -56,16 +56,17 @@ We need to talk about exactly what is going on in each step. Even though boostin
 \subsubsection{Practical considerations, or cool properties?}
 \begin{itemize}
 \item By design, AdaBoost definitely continually reduces training error. If each $\hat{f}_t(x)$ is a bit better than random guessing on the training set, the more of these that we combine the better that we do. Our training error should actually go to $0$ if $T$ is big enough. This property holds for binary classification where we start with anything better than random guessing: but might not be practically super interesting because this says nothing about test error. 
-\item People were at first worried that AdaBoost would certainly overfit if $T$ is too big. There are error bounds, like the one you worked with on your midterm but based on VC dimension and not degrees of freedom, that confirm this. HOWEVER, in practice, it seemed like AdaBoost worked pretty well, even if $T$ was so big that we had reached $0$ training error.
+\item People were at first worried that AdaBoost would certainly overfit if $T$ is too big. Remember that on midterm 3 you derived a formula that said that the difference between the training error and the expected test error depends on the degrees of freedom of an algorithm. Working with a similar concept, people showed that an upper bound on the difference between the training error and the expected test error for AdaBoost grows with $T$. However, in practice, it seems like we don't hit this upper bound. In practice, AdaBoost can work pretty well, even when $T$ is so big that the training error is $0$. 
 \item What is going on?!?!?! Why aren't we overfitting at the point of $0$ training data? 
-\item Even after AdaBoost has reached a point of $0$ training error, we can keep iterating and keep re-fitting with new weights. The consequence of this tends to be that we increase our margin of confidence for our classification: much like an SVM! We know from SVMs that increasing the margin can be GOOD for generalization error. So ... that's cool! 
-\item AdaBoost can certainly overfit. But ... each of these individual hypotheses is weak, and we don't let ourselves make a prediction unless we are confident in it from a diverse set of learners. So ... it isn't so bad.
+\item Even after AdaBoost has reached a point of $0$ training error, we can keep iterating and keep re-fitting with new weights. The consequence of this tends to be that we increase our margin of confidence for our classification: much like an SVM! We know from SVMs that increasing the margin can be GOOD for generalization error. So ... that's cool! Whether or not extra iterations will increase the margin or overfit to noise depends on the signal to noise ratio in your data. 
+\item AdaBoost can certainly overfit. But ... each of the individual learners is weak, and we don't let ourselves make a prediction unless the majority of a diverse set of learners agrees. So ... it doesn't overfit that quickly or that badly. 
+\item Freund and Schapire certainly note that, while AdaBoost can work really well off-the-shelf with some nice properties, it is clearly dependent on the data and the weak learner. It can fail, and is particularly susceptible to noise. 
 \end{itemize}
 
 
-A note on statistics vs. computer science culture. As you know from Breiman, statistics literature often starts by assuming a data-generating mechanism for the data. On the other hand, a lot of computer science machine learning literature starts from a ``no-noise" setting, where we are really doing like pattern-recognition, not statistics. Boosting (like SVMs) was first studied by people in the no-noise setting! Overfitting is of course less of an issue here-- bias is way more of an issue! This colored some early bagging vs. boosting comparisons. It was found that bagging worked better in situations with noise: boosting works well in low-noise settings where overfitting is not really a concern: bias is the concern. 
+A note on statistics vs. computer science culture. As you know from Breiman, statistics literature often starts by assuming a data-generating mechanism for the data. On the other hand, a lot of computer science machine learning literature starts from a ``no-noise" setting, where we are really doing like pattern-recognition, not statistics. Boosting (like SVMs) was first studied by people in the no-noise setting! Overfitting is of course less of an issue here-- bias is way more of an issue! This colored some early bagging vs. boosting comparisons. It was found that bagging worked better in situations with noise: boosting works well in low-noise settings where overfitting is not really a concern. You can see the Dietterich paper on GLOW to read one of these comparisons!
 
-Freund and Schapire certainly note that, while AdaBoost can work really well off-the-shelf with some nice properties, it is clearly dependent on the data and the weak learner. It can fail, and is particularly susceptible to noise. 
+
 
 \subsubsection{Comparison to Bagging}
 
@@ -82,30 +83,60 @@ Now that we understand a bit more, we can compare AdaBoost to bagging!
 
 \subsection{Boosting is an additive model? (Friedman, Hastie, and Tibshirani, 2000)}
 
-Boosting is far more general than just AdaBoost! It can be extended to multi-class classification and regression. In the process of extending it, people realized it has beautiful connections to other concepts in statistics! For example, you could have each weak learner $\hat{f]_t(x)$ in AdaBoost return a probability prediction, not a $-1$ or $1$ prediction. This allows more information about confidence and size of error when computing future weights. This makes sense! This then leads to a view (pointed out by Breiman, among others) that we can see AdaBoost as doing gradient descent on an exponential loss. 
+Boosting is far more general than just AdaBoost! It can be extended to multi-class classification and regression. In the process of extending it, people realized it has beautiful connections to other concepts in statistics! %For example, you could have each weak learner $\hat{f]_t(x)$ in AdaBoost return a probability prediction, not a $-1$ or $1$ prediction. This allows more information about confidence and size of error when computing future weights. This makes sense! This then leads to a view (pointed out by Breiman, among others) that we can see AdaBoost as doing gradient descent on an exponential loss. 
 
-We don't have time to do justice to all of these connections, but let's talk about one really important paper: Friedman, Hastie, and Tibshirani  (2000). They connect boosting to additive logistic regression. These insights helped with computational efficiency of boosting, let us study its theoretical properties with a wider array of tools, and also led to further extensions! This paper is summarized really nicely in ESL Chapter 10! 
+We don't have time to do justice to all of these connections! We will really briefly talk about the ideas from one paper: Friedman, Hastie, and Tibshirani  (2000). They connect boosting to additive logistic regression. These insights helped with computational efficiency of boosting, let us study its theoretical properties with a wider array of tools, and also led to further extensions! This paper is summarized really nicely in ESL Chapter 10! The notes here are not intended to provide a lot of detail: just to provide connections to things you have seen already in class!
 
-The key insight is that AdaBoost can be seen as an iterative forward stage-wise algorithm for fitting an additive logistic regression model, that optimizes a particular loss function. This insights helps them see that AdaBoost can be both simplified but also greatly generalized! 
+The key insight of this paper is that AdaBoost can be seen as an iterative forward stage-wise algorithm for fitting an additive logistic regression model, that optimizes a particular loss function. This insights helps them see that AdaBoost can be both simplified but also greatly generalized! 
 
-Recall that, in an additive model:
+\subsubsection{Remember GAMs?}
+
+Recall from many weeks ago that a GAM (generalized additive model) has the form: 
 $$
 \hat{f}(x) = \sum_{j=1}^p \hat{f}_j(x_j).
 $$
-This could either be a linear regression model, or could be a logistic regression model, in which case $\hat{f}(x)$ is modeling the log odds of belonging to a certain class. This model does not allow predictors $x_j$ and $x_k$ to interact, unless we pre-specify the interaction as its own feature. This was a main limitation. But, a key connection to boosting is remembering the back-fitting algorithm that we used to fit this model. We went term-by-term and we iteratively fit a relatively simple model to the current residuals from the remaining terms. That iterative process sounds a bit like boosting, no? 
+This could be a linear regression model where we are directly modeling $y$, or could be a logistic regression model where $\hat{f}(x)$ is modeling the log odds of belonging to a certain class.  This model does not allow predictors $x_j$ and $x_k$ to interact, unless we pre-specify the interaction as its own feature, which was a limitation.
 
-To further see the connections to boosting, we can make the additive model less additive. Let $b(x)$ be some sort of basis function that is allowed to use ALL of the predictors $x$, as well as some other parameters $\gamma$. Then, we could let:
-$$
+Recall that we had an iterative procedure (backfitting) for fitting a GAM that allowed each individual $\hat{f}_j(x_j)$ to be something super complicated like a smoothing spline. The backfitting algorithm starts with a guess for each $\hat{f}_j()$. Then, for one $j$ at a time, it fits a model to predict the current residuals $y - \sum_{k \neq j} \hat{f}_k(x_j)$ using $x_j$.\footnote{If we are doing logistic regression, we don't quite use residuals. We use working residuals, which are more complicated}. It uses this model as its new, updated guess for $\hat{f}_j()$. We do this iteratively until the guesses for the $\hat{f}()$ stop changing. 
+
+Why are we mentioning GAMs? The idea of iteratively fitting relatively simple models to current residuals to improve the model sounds like boosting!!! There are just two differences.
+\begin{itemize}
+\item This model goes predictor-by-predictor; boosting did not have this limitation.
+\item This model goes back and updates the guess for $\hat{f}_k(x_j)$ multiple times; boosting does not change a simple model once it fits it once; it just adds more simple models. 
+\end{itemize}
+
+\subsubsection{GAMs with new basis functions}
+
+What happens if we make our additive model a little bit les additive? 
+
+Let $b(x, \gamma)$ be a basis function, which depends on parameters $\gamma$, that depends on all of the predictors $x$. We could let: 
+\begin{equation}
+\label{eq_additive}	
 \hat{f}(x) = \sum_{m=1}^M \beta_m b(x, \gamma_m). 
-$$
-We talked about how a neural network can be written in this way! Where $b()$ is the activation function, $\gamma_m$ are the weights in the first layer, and $\beta_M$ are the weights in the activation layer. This is a really complicated basis expansion, but can nonetheless be seen as a basis expansion. We talked about how the people behind Projection Pursuit proposed a model like this, but (at the time), there was not an efficient and feasible way to fit such a thing! 
+\end{equation}
 
-AdaBoost provides a lens through which to imagine fitting this model, that looks a bit different than neural networks. Each $b_m()$ could be a 2-level tree, where the parameters $\gamma_m$ that we need to learn are the split variables and the split points. By fitting the tree to the residuals from previous iterations, we are focusing on points that we previously got wrong. This starts to look a lot like boosting: iteratively fitting trees to previous residuals!
+This model is additive in the basis functions, but in terms of the individual features this is a linear combination of non-linear functions of the individual features. 
 
-It turns out that AdaBoost exactly fits this model, but it does so in a way that minimizes an exponential loss function for classification. You could change this to the binomial negative log likelihood to make it more closely resemble standard logistic regression. You could also change this to any other loss function for regression. Boosting fits an additive model with weak learners as basis functions, and it minimizes a loss function using iterative gradient descent! 
+We have seen a model just like this before! A neural network with one hidden layer can be written in this way!\footnote{We also talked about projection pursuit regression: an extension of GAMs to more complicated models, that also looks just like this!} The $\gamma_m$ are the weights in the first layer that connect each $x$ to hidden node $m$. Then, $b$ is the activation function, and $\beta_m$ is the weight in the second later that connects hidden node $m$ to the output. So, if $b$ is a non-linear transformation of a linear combination of the $x$s, then this is a neural network, and we could fit it with backpropagation. 
 
-The idea of a forward stage-wise model is that we iteratively add new basis functions to the expansion without allowing ourselves to change the ones that have already been added. This is what makes it boosting. We always have a current model, and we are always looking to improve whatever is left over. We add a new basis term to the residuals! 
+But what if $b$ is a simple regression tree, and $\gamma_m$ encodes the split variables and split points of this tree? All of the sudden, (1) I am not sure how to fit it with backpropagation, but (2) this looks quite a bit like a model we could fit with AdaBoost!
 
-Forward stage-wise boosting is a very greedy strategy. We always take the step that most reduces the loss function right now. Recall that gradient descent updates initial guesses for parameters by moving them in the direction that will most reduce the lost function right now. Thus, boosting is really just gradient descent- where we take our steps not necessarily in real-valued parameter space, but rather in function space (we can take a step in the direction of a tree).
+\subsubsection{Adaboost as an algorithm for fitting \eqref{eq_additive}}
 
-We are not going to cover gradient descent in detail! But you should know that it exists, and how to use it! 
+Suppose that we fit \eqref{eq_additive} in a greedy forward stagewise manner. The idea of a forward stagewise procedure is that we first figure out $\beta_1$ and $\gamma_1$, then we figure out $\beta_2$ and $\gamma_2$, etc. Unlike with backfitting, we do not let ourselves go backwards and update $\beta_1$ again later in the process. By ``fit" the model, I mean pick the values for $\beta_m$ and $\gamma_m$ that most improve a certain loss function between $\hat{f}(x)$ and $y$ right now. 
+
+It turns out that the weights and update steps for Adaboost are exactly equivalent to what we would get if we fit the model \eqref{eq_additive} using a greedy forward stagewise procedure with a particular exponential loss function. The reason that this perspective is so cool is that it immediately tells us that we could come up with different boosting procedures by replacing the exponential loss function with another loss function! 
+
+For classification, we could consider a loss function that is more robust to outliers. For regression, we can use something like squared error loss, which makes boosting \emph{very} simple (see the algorithm in ISL where they simply fit regression trees to residuals!). 
+
+\subsubsection{Adaboost as gradient descent?}
+
+Forward stage-wise boosting is a very greedy strategy. We want to take the step that most reduces the loss function right now. Recall that gradient descent updates initial guesses for parameters by moving them in the direction that will most reduce the lost function right now. These seem really similar! 
+
+In fact, in ESL Section 10.10.2, the authors discuss the fact that, when we add a new tree to a boosting model, we really want to add a tree that moves in the direction of the current gradient of the loss function. Thus, we should fit our new tree to the current gradient of our loss function: this way, we are moving in a direction that is close to the direction of the negative gradient, but we are moving in a way that is allowed in our model class (we are just adding a tree). 
+
+For squared error loss, this just means fitting a regression tree to the current residuals! For other loss functions, we similarly fit a tree to a form of current working residuals. Thus, we can really see boosting as fitting \eqref{eq_additive} by always taking steps in our model space (i.e. steps that add a new tree) in the direction of the gradient of the loss function. 
+
+There have been some other innovations that have come from viewing boosting as gradient descent or an additive model. For example, we know that in gradient descent we should take SMALL steps in the direction of the gradient. We shouldn't be too greedy right now, lest we overshoot our optimum or get stuck in a local optimum. This leads to the idea of a shrinkage parameter for boosting; maybe we shouldn't let ourselves take steps that are too big! So maybe we should only take a SMALL step in the direction of each new tree. We might need more trees in the model, but this seems to really help prevent overfitting. 
+
+This was a whirlwind: but now you know that gradient boosting exists!
