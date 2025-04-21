@@ -1,8 +1,86 @@
 \section{Monday, April 21: Inference}
 
+\subsection{What do we mean by inference?}
+
+In Stat 202, I give my students the following two definitions.
 \begin{itemize}
-\item Parameter intervals vs. prediction intervals: which is ``easier"?
-\item Conformal inference: a generic approach for black box prediction intervals. 
+\item \emph{Probability:} given an exact probability distribution, including the value of all of the parameters, figure out how a random variable will behave (probabilities of events, moments, etc).	
+\item \emph{Inference:} given one or more realizations of a random variable, figure out what probability distribution it might have come from. If you already assumed that the random variable(s) are from a certain family of distributions or are related in some way, this means estimating values for certain parameters that mean something to you.  
 \end{itemize}
+
+If these were the definitions that we were sticking with, then it would seem like it only makes sense to talk about \emph{inference} in Breiman's ``data modeling" world, and not in his ``algorithmic" world. Under the definition above, if we don't think that there is 
+
+However, I also tend to think of \emph{inference} as any method for quantifying uncertainty about something that we are estimating from our data. And the thing that we are estimating from data could just be a single prediction! So, maybe it does make sense to do inference even when we are being ``algorithmic". More on this below! 
+
+\subsection{Reminder from Stat 346: Confidence Intervals vs. Prediction Intervals}
+
+In Stat 346, you probably used the words ``confidence interval" and ``prediction interval" to refer to different quantities. I think that these names are confusing, but reviewing what they mean in a simple linear regression setup will help us understand different types of inference that we might do. 
+
+Consider a setup where we are from the data modeling culture. We believe that
+$$
+Y = \beta_0 + \beta_1 X + \epsilon, \ \ \ \ \ \ \epsilon \overset{i.i.d.}{\sim} N(0, \sigma^2). 
+$$
+We use our training data to come up with estimates $\hat{\beta}_0$ and $\hat{\beta}_1$. These of course also give us estimates $\hat{y}(x)$ for any new $x$ that we might plug in. We also have an estimate $s_e$ of the unknown $\sigma$. 
+
+Consider the following three types of intervals.
+
+\begin{itemize}
+\item A confidence interval for the parameter $\beta_1$, which we form using $\hat{\beta}_1 \pm t^* SE(\hat{\beta}_1) = \hat{\beta}_1 \pm t^* \frac{s_\epsilon}{\sqrt{\sum_{i=1}^n (x_i - \bar{x})}}$. This second equality just plugs in the form of $SE(\hat{\beta}_1)$, which depends on the estimated amount of noise in $y$ as well as the spread of $x$. 
+\item A confidence interval for a prediction $\hat{y}(x)$, which we form using $\hat{\beta}_0 + \hat{\beta}_1 x + t^* \left( s_e \sqrt{\frac{1}{n} + \frac{x - \bar{x}}{\sum_{i=1}^n (x_i - \bar{x})}}\right)$. This is just $\hat{y}(x)$ plus the estimated standard error of $\hat{y}(x)$, which depends on the same terms as $SE(\hat{\beta}_1)$, but additionally depends on how far this particular point is from the middle of the distribution of the training set $x$. The idea is that, for 95\% of all random samples, this interval should contain the true value of $\beta_0 + \beta_1 x$ at this point $x$. Therefore, this is really just quantifying uncertainty in the parameters $\beta_0$ and $\beta_1$; plus a little transformation that is specific to where you are along the X-axis. This transformation reflects the fact that small changes in estimated slope are more impactful on your prediction when you are far from the center of the data. 
+\item A prediction interval for a prediction $\hat{y}(x)$, which we form using $\hat{\beta}_0 + \hat{\beta}_1 x + t^* \left( s_e \sqrt{1 + \frac{1}{n} + \frac{x - \bar{x}}{\sum_{i=1}^n (x_i - \bar{x})}}\right)$. Under our assumptions, this interval is supposed to contain the true value of $y$ when $x=x$ 95\% of the time. Note that all we did in this simple setting was add an extra factor of $1$, which gets multiplied by $s_\epsilon$. So we are just allowing for variability around our regression line, which has size $s_\epsilon$. The variability around the regression line for a single point doesn't shrink as our sample size increases: only the uncertainty in the line itself does.
+\end{itemize}
+
+The point in reminding you about the difference between a confidence interval and a prediction interval is that a confidence interval often only makes sense if we are coming from a data-modeling culture and are fitting a parametric model. But a prediction interval clearly extends well beyond the parametric setting! Any time that we are making point-predictions $\hat{y} = \hat{f}(x)$, we might wonder if we can turn this into an interval prediction that will contain the true $y$ for this $x$ with high probability. 
+
+I still think that it makes sense to call the third bullet point a confidence interval- it's just a confidence interval for an individual outcome! So you might sometimes hear the words confidence interval or prediction interval used interchangeably- I don't think that this is a huge problem. But others might care more about precise language!
+ 
+
+\subsection{Why do we care about inference?}
+
+Suppose that your main goal in fitting a statistical learning model is to make predictions for new, unseen observations. In this case, being able to quantify uncertainty about future predictions is incredibly important! So prediction intervals are vital. 
+
+Separately, suppose that our main goal is to understand some underlying process or truth about the real world. In this case, we want to do what Efron calls attribution. 
+\begin{itemize}
+\item If we are estimating parameters in a linear model to quantify which variables are associated with the response, you all already know why it is important to do inference. We want to make sure that we aren't seeing a non-zero effect of a certain variable just due to random chance in our training sample. We want to feel really sure that, in the population, the effect is non-0. So, in a parametric model, it makes sense to do inference to quantify our uncertainty about the underlying population parameter.  This typically means doing inference on a pre-specified parameter. 
+\item Suppose we are fitting a regression tree, and our regression tree selects a split on a certain variable and a certain split point. We might want to know that this split is not specific to our training data- we might want to know that this split exists in the population! So, we might want to do inference here, and the inference is not a prediction interval, it is a confidence interval. But, it is different than the linear model above! Because ... the parameter we end up doing inference on is not pre-specified- it is something that was selected by our regression tree. As it turns out, this can get us into all sorts of trouble. 
+\end{itemize}
+
+You all know how to make confidence intervals and prediction intervals for linear regression. And, with appropriate assumptions, confidence intervals and prediction intervals work in pretty much the same way for any parametric model. This was really the topic of Stat 360. In this class, I want to focus on what happens when we are in more non-parametric settings. Can we still do meaningful inference?
+
+I divided the sections below into first covering an example of a confidence interval for a parameter that summarizes a dataset vs. an example of a prediction interval for a single observation. 
+
+\subsection{Confidence intervals for algorithmic models}
+
+In order to make a confidence interval that we \emph{wouldn't} call a prediction interval, we do need \emph{some} notion of a population parameter: even if we did not start out with a parametric data-generating model.
+
+To give an example of how we might end up with one of these, suppose that you fit a single-level regression tree to your data. Out of $p$ total predictors, the regression tree decides to make a split on $X_j < s$ for some $j \in 1,\ldots,p$ and some constant $s$. The model now predicts $\bar{y}_L$ for all points on the left side of the split and $\bar{y}_R$ for all points on the right side of the split, where these $\bar{y}$ values were computed on the training set.
+
+Before you built your regression tree, you didn't really have a data-generating model in mind. But, now that you are looking at your tree, you do sort of have one in mind. The model says that: 
+$$
+E[Y] = 
+\begin{cases}
+\mu_L & \text{ if } s_j < s \\
+\mu_R & \text{ otherwise }. 
+\end{cases}
+$$
+In this model, $\bar{y}_L$ and $\bar{y}_R$ are just sample estimates of population parameters; we would like to use them to do inference on the population parameters $\mu_L$ and $\mu_R$. We could also write this as a linear model
+$$
+E[Y \mid X] = \mu_L + \beta 1_{x_j > s},
+$$
+and could imagine that we are interested in doing inference on $\beta$, which parameterizes the difference in means across the split in our tree. In fact, if we fit a least squares regression of our training responses $y$ on the indicator vector $ 1_{x_j > s}$, our sample intercept will be $\bar{y}_L$ and our sample slope will be $\bar{y}_R-\bar{y}_L$ . The reason I am bothering to mention this is so that you can see that, after we have fit a regression tree, we can refit it as a nice linear model. But the difference is that the parameters were not specified in advance: this indicator vector $ 1_{x_j > s}$ won out over all possible indicator vectors. 
+
+Thus, as we have alluded to many times in this class, downstream inference based on the training data is invalid. We cannot use our training data to make a confidence interval for $\mu_L$ or $\mu_R$. I decided not to go through it in class today, but you can easily make a small simulation study for yourself in R where you show yourself that, if you do this, your confidence intervals will not have $95\%$ coverage! 
+
+There are two options:
+\begin{itemize}
+\item Split your data into a training set and a test set. Fit a tree to the training set to come up with your parameters of interest. Do classical inference on these parameters using the test set. While this is very flexible and should work in most settings, it still requires the notion of a ``parameter of interest" that is meaningful on the test set-- so I'm not sure what it would look like in the case of a true black box. It makes a lot of sense for trees though! 
+\item Come up with fancy math to do non-classical inference that accounts for the selection event. This is a cool area of research! But it tends to require a lot of assumptions and a relatively simple setup (not an arbitrary black box). You can do it for regression trees under a Gaussian assumption- this was my first PhD project! 
+\end{itemize}
+
+Overall, I think that this tree example is a good one to keep in mind in your future endeavors in terms of what we might mean when we say we want to do inference for machine learning models! It can mean all sorts of things, but this is an example where it meant that we wrote down a parameter AFTER seeing our fitted machine learning model. 
+
+\subsection{Prediction intervals for black-box models}
+ 
+ As Efron hinted at in the reading that you all did, prediction is actually easier than estimation or attribution. It turns out that we \emph{can} make finite-sample-valid prediction intervals for black-box models with very few distributional assumptions. An example of a framework for doing this is \emph{conformal inference}. Conformal inference is extremely cool; see the RMarkdown demo on GLOW. I will migrate some notes from the RMarkdown demo into this document at a later date. 
 
 
