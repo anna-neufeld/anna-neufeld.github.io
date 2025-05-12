@@ -126,16 +126,15 @@ The general idea is that we want to solve the optimization problem:
 $$
 \mathrm{minimize}_Z \sum_{i,j \mathrm{observed}} (X_{ij} - Z_{ij})^2 \ \ \ \ \ \text{subject to: } rank(Z)=k. 
 $$
-Unfortunately, this is really computationally hard to solve! But people have come up with nice approximations, algorithms, etc. 
+If you could come up with this matrix $Z$, you would then have the SVD that you need to impute the missing entries! Unfortunately, this is really computationally hard to solve! But people have come up with nice approximations, algorithms, etc. 
 
-ISL, Algorithm 12.1, covers ``Hard Impute", which I think is clever and makes sense and is an awesome demonstration of how learning fundamentals like the SVD can really get you a long way. However, in practice, more complicated algorithms certainly exist too. 
+ISL, Algorithm 12.1, covers ``Hard Impute", which I think is clever and makes sense and is an awesome demonstration of how learning fundamentals like the SVD and seemingly ``dumb" solutions (try something over and over with slightly improved guesses) can really get you a long way. However, in practice, more complicated algorithms certainly exist too. 
+
+The idea of Hard Impute is to start by guessing that every missing value in $X$ is equal to its column mean. So, if a user has not rated a movie, assume that they would rate it as the average of all other users. Call this guessed-matrix $\tilde{X}$, and compute the SVD of $\tilde{X}$. Then, replace every MISSING element in $X$ with its low-rank approximation (you need to have already picked the rank) suggested by the SVD of $\tilde{X}$. Repeat this process over and over until your reconstruction error on your OBSERVED entries stops decreasing. 
 
 You might enjoy reading about the Netflix Prize \\ (\url{https://www.thrillist.com/entertainment/nation/the-netflix-prize})
- of the early 2010s, which is when this problem and this field really took off!
-
-
-
-
+ of the early 2010s, which is when this problem and this field really took off! Also, the paper that discusses Hard Impute (\url{https://www.jmlr.org/papers/volume11/mazumder10a/mazumder10a.pdf}) also discussed L1 regularized versions that might be preferable. 
+ 
 \section{Thursday, May 15: Final presentations}
 
 The end! No more lecture notes! Hopefully these lecture notes will improve a lot between now and the next time I teach this class (summer project!). 
