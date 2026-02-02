@@ -1,0 +1,121 @@
+\section{Monday, May 5: Introduction to Unsupervised Learning and Clustering (Day 1)}
+
+Announcements:
+\begin{itemize}
+\item \textbf{Final projects:} Speed presentations a week from Thursday, papers due over reading period.
+\item \textbf{HW8:} Clustering and cluster validation: posted this week, due next Friday. Short, because I want you to do a good job on your final projects!	
+\end{itemize}
+
+
+\subsection{What is unsupervised learning?}
+
+So far in this class, statistical learning has meant \emph{supervised} learning. We have always had a response variable $y$ (either numerical or categorical), and we have always been at least partially trying to predict $y$ using explanatory variables $x$. I say \emph{partially} because sometimes prediction has been our primary goal, whereas other times our primary goal has been understanding/interpretation; but we have still achieved understanding/interpretation by fitting a model $\hat{f}(x)$ such that $y \approx \hat{f}(x)$. 
+
+
+Today, we will start a brief unit on \emph{unsupervised learning}. The key difference is that we have no special response variable $y$! For your purposes, we have a large matrix of data $X \in \mathbb{R}^{n \times p}$ (assume that categorical variables are represented with indicators), and our goal is to \emph{find structure} in this data.
+
+I think that a large number of unsupervised tasks can be thought of in the following way. We know that our data $X \in \mathbb{R}^{n \times p}$ has some randomness or noise in it. But, we think that
+$$
+E[X] \approx L \beta^T,
+$$
+where $L \in \mathbb{R}^{n \times k}$ and $\beta \in \mathbb{R}^{k \times p}$, where $k$ is often much smaller than $p$. We can think of $L$ as latent variables; they are unobserved, but they help us understand the structure in our data. If this setup is not what you think of when you think of unsupervised learning, note that it encompasses the two types of unsupervised learning you have likely heard of, because:
+\begin{itemize}
+\item $L$ could be a matrix of indicator-vectors that represent group membership (clustering!). 
+\item $L$ could be continuous, and could represent coordinates of our data along $k$ new axes (principal components, dimension reduction, etc). 
+\end{itemize}
+
+In some ways, clustering is the more mathematically difficult task, because it is non-smooth and uses fewer beautiful tools from linear algebra. However, we will start with clustering today because it is easy to visualize, so gives a first good sense of unsupervised learning. 
+
+Before we talk about specific clustering algorithms, let's talk about some contexts where unsupervised learning comes up or is used. Because I think its important to keep these in mind: there are a lot of under-appreciated differences between different contexts where unsupervised learning comes up. 
+
+\subsection{Where does unsupervised learning come up?}
+
+I am sure I am missing contexts; this is just a list to get you started. 
+
+\begin{list}{}{}
+\item[\textbf{Context 1:}] We really wish we were doing supervised learning, but our labels (y) are missing.
+\begin{itemize} 
+\item  Consider image classification; a classic task in supervised learning: we have a big set of pixel-level data for each image, and we want to use the pixel-level data to predict if the image is a cat, dog, horse, etc.
+\item Getting large training datasets from the internet for image classification tasks is really time intensive. Because the images are quick to download, but a human often needs to go through and add labels (cat, dog, horse) to every image.
+\item If we are processing a lot of data from online and we do not want to use human annotation to get labels, we suddenly have image classification as an unsupervised task.
+\item We might train an algorithm to cluster our images into groups. Only after we have our groups will we have a human go through and label the entire group: ``this cluster represents the dog images". 
+\item When people are developing clustering algorithms with this goal in mind, they often take a dataset that DOES have gold-standard labels, and evaluate the ability of a clustering algorithm to reconstruct these gold-standard labels. This gives us a notion of ``accuracy", which we do not always have for unsupervised learning!
+\end{itemize}
+\item[\textbf{Context 2:}] We think that the $p$-dimensional variation in our data can be summarized by a smaller number of latent variables; we know in advance what these latent variables represent and how many there are. 
+\begin{itemize}
+\item This is basically the same as Context 1, but there doesn't necessarily need to be a concrete prediction task in mind.
+\item In the analysis of single-cell RNA sequencing data, researchers often want to characterize variation by ``cell type". But cell type is not observed in the sequencing process. Thus, they use clustering to come up with estimated cell types ($L$), and then proceed with further analysis.
+\item Now that researchers have published various ``Cell Atlas's" detailing recognized human cell types, there is in theory an agreed upon set of cell types that we are looking for, and this is essentially a missing data problem rather than an amorphous exploratory task. 
+\end{itemize}
+\item[\textbf{Context 3:}] We think that the $p$-dimensional variation in our data can be summarized by a smaller number of latent variables; we don't know in advance what these represent or how many there are. 
+\begin{itemize}
+\item This is a lot like Context 2, but is much more exploratory. 
+\item The cell type example can sometimes turn into this, because researchers want to not only detect existing cell types but also detect novel cell subtypes; so the number or meaning of the clusters is not always fixed in advance.
+\item I think psychologists do this a lot too, with factor analysis. Given a big set of results to, i.e. a personality survey, they try to explain the variation in their results with a smaller number of latent factors. They can then try to call these ``personality types".
+\item An online retailer might look for batches of similar customers, to advertise similarly to them in the future. They don't know in advance what they are looking for, but they end up assigning names to the groups: ``sports-enthusiasts", ``budget-hunters", etc. 
+\item In image classification, we can learn cool latent concepts that summarize high-dimensional pixel data. Once we can visualize these, we might recognize them (i.e. beak means bird). But we don't know how many concepts we are looking for in advance; we will label them after. 
+\end{itemize}
+\item[\textbf{Context 4:}]  We want to visualize a complex dataset in low-dimensional space, organize our data, or reduce the dimension of our data for some other reason.
+\begin{itemize}
+	\item Dimension reduction, a form of unsupervised learning, can just be really nice for visualizing high dimensional data in low dimensional space! If we can reduce the dimension without losing much (i.e. $X \approx L \beta^T$, we can save on the cost of storing our data! We might also believe that much of what we are losing is just noise, so we are de-noising the data. 
+\end{itemize}
+\item[\textbf{Context 5:}] We have $X$ and $y$, but we want to pre-process $X$ with unsupervised learning
+\begin{itemize}
+\item You have actually all already done this!
+\item PCA regression in Stat 346! Or, HW1 in this class, where you used PCA as pre-processing for KNN to help with the curse of dimensionality. 	
+\item Dimension reduction can be a nice preprocessing step for supervised learning! 
+\end{itemize}
+\item[\textbf{Context 6:} ] Imputation for missing data. 
+\begin{itemize}
+\item Suppose we have a matrix $X$ of data with a lot of missing values. Maybe downstream we want to do supervised learning, or maybe not.
+\item We need to fill in these missing values. If we believe that $X \approx L \beta^T$, and we have enough data to learn good values for $L$ and $\beta$ (we will talk about methods), then we can impute the missing $X_{ij}$ with $(L \beta^T)_{ij}$. These imputed values respect the general latent trends in the X data. 
+\item If this is our goal, we can evaluate how well different methods work by taking non-missing data and randomly holding it out, and checking our ability to reconstruct it.
+\item So this is another setting that has sneaky connections to supervised learning: there is a right answer, we just don't have the answer at test-time. 
+\end{itemize}
+\item[\textbf{Context 7:} ] Recommender systems.
+\begin{itemize}
+\item I no longer think that we will have time to cover this one in this class, but it is a good one to know about. Because it is fun! 
+\item Suppose that Netflix has data for $n$ customers and $p$ movies. Customers can rate a movie that they have watched, and say if they liked it. But, not all $n$ customers have rated all $p$ movies. So there is TONs of missing data in this matrix.
+\item We can use dimension reduction to learn latent types of customers based on the rating that they have provided. We can then use imputation (matrix completion) to fill in hypothetical ratings for additional movies. We use this to make recommendations! 
+\item So cool! And a really straightforward but clever application of unsupervised learning! 
+\item If you tried to do movie recommendations with a fully supervised approach, you would run into trouble because you have so much missing-ness! So few customers have seen a particular movie!
+\item But this matrix completion idea is so clever. They have nice algorithms that are really good at learning good latent factors even in the presence of a lot of missing-ness. 
+\end{itemize}
+
+\end{list}
+
+\subsection{What is clustering?}
+
+A clustering algorithm takes a matrix $X \in \mathbb{R}^{n \times p}$ and splits the $n$ observations into $k$ discrete groups. The groups are supposed to be homogenous within-group and heterogenous between-group. Clustering algorithms differ along a few broad axes:
+\begin{itemize}
+\item Does the number of groups $k$ need to be specified in advance?
+\item What metric do we use to define a homogenous group? Is it compactness in Euclidean space? Or connectivity along a neighborhood graph? 	
+\item Can an observation belong to more than one cluster? Can it have a certain probability of belonging to a few different clusters? This is the difference between hard-clustering and soft-thresholding. 
+\end{itemize}
+
+The three clustering algorithms that we will see in this class will hit on these three different properties.
+
+\subsection{A very brief introduction to k-means}
+\begin{itemize}
+\item K-means is a very popular and very simple clustering algorithm. Jack will present on the details! 	
+\item We define homogenous-clusters using within-cluster mean-squared error (euclidian distance between a point and its estimated cluster centroid).
+\item We need to pre-specify $k$, and we use ``hard"-clustering (each point gets assigned to exactly 1 cluster). 
+\item The basic idea of the algorithm is simple. We start by randomly choosing $k$ cluster centers. Each datapoint then gets assigned to the cluster center it is closest to. We then update the centers to be the mean of all datapoints currently assigned to that cluster. We iterate until the centers/assignments stop changing. 
+\item It turns out that, under the assumption that $X_{i} \sim N_p\left( \sum_{k=1}^K 1(i \in C_k) \mu_{k}, \sigma^2 \right)$ K-means is searching for the maximum-likelihood estimates for the cluster assignments (each $i$ must be in exactly one cluster $C_k$) and the cluster centers $\mu_k$. It is searching using an EM algorithm; it is not guaranteed to find the maximum likelihood estimates, since it could get stuck in a local-maxima of the likelihood function. It is sometimes good to try out K-means with several different random seeds, and choose the ``best" (according to within-cluster MSE) final cluster. 
+\item Since K-means inherently assumes Gaussian clusters with shared variance, it creates linear boundaries between clusters. This is not always ideal! 
+\item How do we select $K$? A topic for next class!
+\item K-means is a lot like KNN; subject to curse of dimensionality; should scale our features; irrelevant noise features can hurt us, etc.
+\end{itemize}
+
+
+
+\subsection{A very brief introduction to hierarchical clustering}
+
+\begin{itemize}
+\item Hierarchical clustering is a good framework to be aware of. It is less of ``one algorithm" and more of a way to think about clustering. Amina will present on the details!
+\item The idea of (agglomerative) hierarchical clustering is that we start by assuming every datapoint is its own unique cluster. We then go step by step and we merge datapoints that are most similar to one another. We ended up with a tree-structure for our data, in which points are connected in the tree to similar points. This creates a natural, hierarchical grouping of points, with main clusters and sub-clusters.
+\item We don't need to decide the number of clusters in advance; we can decide by looking at our tree. 
+\item We need a notion of a linkage function. How do we decide how close two clusters are to one another? Do we consider all points? Or only points that are closest to one another? Amina will tell us about a few choices of linkages.
+\item Hierarchical clustering actually starts from a distance matrix; not from raw data. Thus, we don't need to use Euclidian distance. We could use something else if we wanted!
+\end{itemize}
+

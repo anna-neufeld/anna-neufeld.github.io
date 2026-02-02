@@ -1,0 +1,139 @@
+\section{Thursday, 2/20: More on regularization}
+
+We did not end up getting to classification at all! Because there is a LOT to say about Ridge and Lasso, so we spent a lot of time on them! 
+
+\subsection{Recap from last time on Regularization}
+
+If we have $n$ training datapoints $(x_1, y_1), \ldots, (x_n, y_n)$, then ordinary least squares solves the following objective function on the training set:
+\begin{equation}
+\label{ols}
+\hat{\beta}_{OLS} = \argmin_{b \in \mathbb{R}^p} \sum_{i=1}^n 	(y_i - b^T x_i)^2
+\end{equation}
+When our true model is linear, this is unbiased for the ``true $\beta$". But, it can have high variance, especially if the number of predictors $p$ is large and many of those predictors are irrelevant. 
+
+Last class, we mentioned three regularization methods. The point of all three is to reduce the variance of \eqref{ols}, but all three do this at the expense of possibly introducing bias. The three methods were:
+
+\begin{itemize}
+\item \textbf{Best subset:} 
+\begin{equation}
+\label{subset}
+\hat{\beta}_{subset,\lambda} = \argmin_{b \in \mathbb{R}^p} \sum_{i=1}^n 	(y_i - b^T x_i)^2 + \lambda ||b||_0
+\end{equation}
+\item \textbf{Ridge: }
+\begin{equation}
+\label{ridge}
+\hat{\beta}_{ridge,\lambda} = \argmin_{b \in \mathbb{R}^p} \sum_{i=1}^n 	(y_i - b^T x_i)^2 + \lambda ||b||_2^2
+\end{equation}
+\item \textbf{Lasso: }	
+\begin{equation}
+\label{lasso}
+\hat{\beta}_{lasso,\lambda} = \argmin_{b \in \mathbb{R}^p} \sum_{i=1}^n 	(y_i - b^T x_i)^2 + \lambda ||b||_1
+\end{equation}
+\end{itemize}
+
+Ff we had to summarize an overall comparison of pros and cons very quickly, I think we would want to say:
+\begin{itemize}
+\item Best subset regression is interpretable! And, if we select the ``true" subset of important variables, we have unbiased coefficients for the ``true" non-zero elements of $\beta$! Unfortunately, it is really computationally expensive!
+\item Ridge regression has a closed form solution so it is really efficient! But it doesn't lead to an interpretable, low-dimensional model. It just reduces variance.
+\item Lasso regression is interpretable and can be solved more efficiently than best subset! We do still shrink the non-zero coefficients, so even if we select the ``true" subset of important variables, we will have bias in the coefficients. 
+\end{itemize}
+
+We visualized the bias and variance of Ridge and Lasso as a function of $\lambda$ in an R demo that is posted on GLOW. We compared to linear model and stepwise regression. We went through the document kind of fast, but there is a lot of good stuff in the document: please read and make sure you understand!
+
+There are a few more things that we need to discuss.
+\begin{itemize}
+\item What the heck is going on in Figure~\ref{fig_lassoridge}? More specifically, what is the connection between regularization and constrained optimization?
+\item Can we say precisely whether best subset or ridge or lasso is more or less wiggly?	
+\end{itemize}
+These are covered below. 
+
+\subsection{Connection between regularization and constrained optimization}
+
+To understand Figure~\ref{fig_lassoridge}, it is important to know \eqref{subset}, \eqref{ridge},  and \eqref{lasso} can all be written as constrained optimization problems. This is discussed on Page 243 of ISL.
+
+Let's focus on Lasso for simplicity. It turns out that \eqref{lasso} is equivalent to:
+$$
+\hat{\beta}_{lasso,\lambda}  = \argmin_{b \in \mathbb{R}^p} \sum_{i=1}^n 	(y_i - b^T x_i)^2 \ \ \ \ \ \ \ \text{        subject to:     } ||b||_1 < s. 
+$$
+For some $s$, which depends on $\lambda$ and also the values of $x_1,\ldots, x_n$ and $y_1,\ldots,y_n$. 
+
+This tells us that our original idea of penalized regression is equivalent to a constrained optimization problem: the problem of solving the least squares problem, but subject to the constraint that $||b||_1 < s$ for some budget $s$. This formulation is useful because there are smart people who know a lot about constrained optimization!
+
+In class, people asked really good questions about WHY we can write a loss+penalty problem as a constrained optimization problem, and also about the connection between $s$ and $\lambda$. This has to do with the theory of the Lagrangian and Lagrange multipliers for constrained optimization! I put a document on GLOW with a lot of notes about this. Please take a look!
+
+How does this idea relate to Figure~\ref{fig_lassoridge}?
+\begin{itemize}
+\item Figure~\ref{fig_lassoridge} draws the contours of the least squares objective function for a given dataset. The minimum of the least squares objective function is the OLS solution, which is marked as $\hat{\beta}$ in the figure. The contours are drawn as a function of $b_1$ and $b_2$, which we are optimizing over. 
+\item Since we can see ridge and lasso as solving this objective subject to a budget constraint, the diamond and the circle draw the Lasso and Ridge budget constraints for a particular $s$. 
+\item The theory of Lagrange multipliers and constrained optimization tells us that our constrained solution occurs where the contours of the OLS function are tangent to the constraint set. This I think you should be able to understand. 
+\item It turns out that, because the lasso constraint is "pointy", solutions are more likely to occur on the axis: i.e. at sparse solutions where one element of $\beta$ is exactly $0$. This I do not think we really have quite enough theory to understand: we would need to study convex optimization and the KKT conditions and such. But I hope the picture gives you a little bit of intuition!
+\end{itemize}
+The .Rmd document that I posted on GLOW gives you code to actually make Figure 1 for any dataset that you generate, and plot the Ridge and Lasso solutions. I hope that you will play around with this code until you understand what is being plotted, and believe me that Lasso tends to give sparse solutions! 
+
+
+%\subsection{A quick aside about degrees of freedom: we skipped this in class, but it is important.}
+%
+%We have been talking about how the bias/variance tradeoff is a function of model complexity. I have been calling this ``how wiggly a function is"- or how capable the model is of overfitting to the training set. 
+%
+%One way to formally measure the complexity of a mode is the \emph{degrees of freedom}. I am sure that you have all heard of degrees of freedom before, but I am not sure that you have ever seen it defined formally. As far as I can tell, ISL avoids defining this formally: they just talk about it being the effective number of parameters in a model. 
+%
+%I feel like we should mention the official definition at least once. Assume that $x_1,\ldots,x_n$ are fixed. Let $g(y) = \hat{y}$, where $g$ is a "model fitting procedure", that takes in the observed values of $y$ as input and trains a prediction model and returns the training set predictions. We are not writing this as $\hat{f}$ because it does not refer to a specific fitted model: it refers to the procedure. And we are not writing it as a function of $X$ because the $X$s are just hiding in the background since they are not random. According to this paper, \url{https://www.stat.berkeley.edu/~ryantibs/papers/sdf.pdf}, 
+%$$
+%df(g) = \frac{1}{\sigma^2} \sum_{i=1}^n Cov(Y_i, g(Y)_i),
+%$$
+%where $\sigma$ is $Var(Y_i)$, which is assumed to be constant across $i$. 
+%
+%Calculating degrees of freedom is really straightforward for simple procedures like linear regression. For more complicated procedures, actually computing this is really complicated! So we might need to estimate or approximate some degrees of freedom. 
+%
+%I don't think we are going to spend too much more time on this. ISL says it is ``outside the scope of the book". But I think we should mention DF or approximate DF for some models we have seen so far. 
+%\begin{itemize}
+%\item Linear regression with $p$ coefficients: $p$ degrees of freedom. 
+%\item KNN: we are making around $n/k$ unique predictions, so we have around $n/k$ degrees of freedom. In fact, $n/k$ is an unbiased estimator for the degrees of freedom apparently. But the true DF depends on the distribution of the $X$s: how many of your ``regions" overlap affects the number of effective parameters. 
+%\item Ridge: You can prove directly from the definition that ridge regression with $p$ coefficients has $< p$ degrees of freedom, and the DF shrinks as $\lambda$ grows. This is because the penalty makes it strictly less wiggly than unpenalized regression on all $p$ predictors. 
+%\item Lasso: If you apply Lasso with $p$ predictors but end up with $p_0$ predictors, it turns out that $p_0$ is an unbiased estimate for the degrees of freedom of Lasso! This is magic! We are considering many more than $p_0$ possible models, which would make you think it is bigger than $p_0$. But, we are also ending up with a $p_0$-dimensional linear regression model and applying shrinkage to this model, which would make you think it is smaller than $p_0$. These two factors apparently average out to $p_0$! 
+%\item Stepwise regression or subset regression: If you start with $p$ predictors but end up with $p_0$ predictors in the final model, your DF should be larger than $p_0$. Because, even though your final model uses $p_0$, you also gave yourself a bunch of options for models to try out, which allows for a bit more potential for overfitting compared to just lm on a fixed set of $p_0$ predictors. 
+%\end{itemize}
+%
+%TLDR: Ridge and Lasso are both LESS WIGGLY than linear regression. Next week, we will see some models that are MORE WIGGLY than linear regression, such as splines or GAMS. 
+
+\subsection{Other}
+
+Some random thoughts and notes. 
+
+\subsubsection{Modern comparison!}
+
+This paper was published in 2020, which is crazy recent for something about such fundamental topics:
+\url{https://www.jstor.org/stable/pdf/26997932.pdf}. 
+
+The big idea is that recent computational advances have actually made best-subset regression more doable! So ... should we just do best-subset? Is it the gold-standard over lasso? Apparently not! Best subset and lasso can each outperform each-other in certain settings, and the overall winner is actually the ``relaxed lasso". I recommend you read the paper!
+
+\subsubsection{Using the lasso for variable selection in practice, and inference after lasso}
+
+I was not planning to cover this in class, but then people asked a lot of questions related to it!
+
+Suppose that you are using lasso for variable selection. 
+
+You can run lasso (with CV to choose $\lambda$ on your data). This will return a $p$-dimensional coefficient vector with a lot of $0$s. 
+
+You could just start interpreting the non-zero regression coefficients in the way you would interpret multiple regression coefficients. But the slightly strange thing is that, not only did lasso set a bunch of coefficients to $0$, but it also shrunk the non-zero coefficients! While it turns out that this shrinking is mathematically good for the bias/variance tradeoff, it isn't good for interpretation! 
+
+So, a common thing to do is to re-fit your model using \texttt{lm()} (unpenalized regression) after running lasso, but using only the variables that lasso selected.
+
+This is nice! Under the assumption that lasso selected the ``true" set of non-zero variables, these coefficients are unbiased for the ``true" coefficients and you can interpret them and do inference. This is a very strong assumption. Among variables that lasso selected that turn out to not truly be important, if you trust the \texttt{lm()} p-values you will get a hugely inflated Type 1 error rate. This is what I mean when I say that ``inference after lasso is invalid".
+
+This is my passion and my research area so if you want to know more about this come ask me! The stepwise regression problem on HW3 also gets at this. But mainly I did not spend much class time on this because inference isn't necessarily the focus of this class. 
+
+Also, it's good to know about this "re-fit the model without a penalty" idea, because it seems that they use this technique in the ``modern comparison" paper above when they do the ``relaxed lasso", which they find works really well! 
+\subsubsection{ElasticNet}
+
+We have a method that combines the strength and weaknesses of Ridge and Lasso. 
+\begin{equation}
+\label{subset}
+\hat{\beta}_{elasticnet,\lambda, \alpha} = \argmin_{b \in \mathbb{R}^p} \sum_{i=1}^n 	(y_i - b^T x_i)^2 + \lambda \left( \alpha ||b||_1 + \frac{(1-\alpha)}{2}||b||^2_2\right) 
+\end{equation}
+
+You could go explore and see if you think this actually works better than Lasso or Ridge individually! And explore its properties! You can also see the shape of the constraint function in ESL Page 73. This section of ESL also talks more about the connection between regularization and Bayesian regression with different priors. How cool and neat!! 
+
+
+
+
