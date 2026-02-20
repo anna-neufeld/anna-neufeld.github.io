@@ -4,9 +4,6 @@ Today, we will finish our bias-variance tradeoff derivation and discuss its impl
 
 Last time, we talked about the pros and cons of linear regression vs. KNN, but all of our visualizations were of regression with a single predictor variable $x \in \mathbb{R}$. Today, we will consider regression in high dimensions, where  $x \in \mathbb{R}^p$.
 
-
-
-
 Recall our typical regression setting. We assume that our data are i.i.d. realizations of random variables $(X,Y)$, where
 $$
 Y = f(X) + \epsilon.
@@ -18,7 +15,7 @@ More specifically, we would like to find $\hat{f}$ that minimizes the expected s
 \label{objective}
 \mathrm{argmin}_{\hat{f} \in \mathcal{F}} \ \ E_{X,Y} \left[ \left(Y - \hat{f}(X)\right)^2 \right],
 \end{equation}
-where $\mathcal{F}$ is some class of functions. On your homework, you will argue that if $\mathcal{F}$ were totally unconstrained, we would want to set $\hat{f}(x) = \mathrm{E}[Y \mid X=x]$. This argument was also in the Lecture 2 notes, but we skipped it. 
+where $\mathcal{F}$ is some class of functions. On your homework, you will argue that if $\mathcal{F}$ were totally unconstrained, we would want to set $\hat{f}(x) = \mathrm{E}[Y \mid X=x]$. 
 
 This is where we hit practical issues. We do not know the joint distribution of $X$ and $Y$, and so we cannot pick $\hat{f}$ to be this ideal function $\mathrm{E}[Y \mid X=x]$. And we really cannot search efficiently over all possible real-valued functions $\mathcal{F}$ to find a good choice for $\hat{f}$. So, a statistical learning algorithm typically restricts the class $\mathcal{F}$ to make this task doable. So far in this class, we have discussed two possible methods for picking $\hat{f}$. It turns out that both of these can be viewed as approximating $E[Y \mid X=x]$; they just do this using different sets of assumptions. 
 
